@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -43,6 +43,11 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --turkish: #3B82F6;
+    --social: #10B981; 
+    --math: #8B5CF6;
+    --science: #F59E0B;
   }
 
   .dark {
@@ -82,6 +87,11 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    --turkish: #60a5fa;
+    --social: #34d399; 
+    --math: #a78bfa;
+    --science: #fbbf24;
   }
 }
 
@@ -97,15 +107,15 @@
 
 @layer components {
   .answer-grid {
-    @apply grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10;
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4;
   }
   
   .answer-button {
-    @apply flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    @apply flex h-7 w-7 items-center justify-center rounded-full border text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
   
   .answer-button.selected {
-    @apply bg-primary text-primary-foreground;
+    @apply bg-primary text-primary-foreground shadow-md;
   }
   
   .subject-turkish {

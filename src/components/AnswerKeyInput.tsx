@@ -2,7 +2,6 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Option, SubjectAnswers, useAnswers } from "@/contexts/AnswerContext";
 import { cn } from "@/lib/utils";
 
@@ -68,7 +67,7 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
   };
 
   return (
-    <Card>
+    <Card className="border-t-4" style={{ borderTopColor: `var(--${colorClass.split('-')[1]})` }}>
       <CardHeader>
         <CardTitle>{subjectLabel} Cevap Anahtarı</CardTitle>
       </CardHeader>
@@ -78,24 +77,26 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
             const startQuestion = groupIndex * 10;
             return (
               <div key={groupIndex}>
-                <h3 className="mb-2 font-medium">Sorular {startQuestion + 1}-{startQuestion + 10}</h3>
-                <div className="answer-grid">
+                <h3 className="mb-3 font-medium">{startQuestion + 1}-{startQuestion + 10}. Sorular</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-4">
                   {[...Array(10)].map((_, questionIndex) => {
                     const absoluteIndex = startQuestion + questionIndex;
                     return (
                       <div key={absoluteIndex} className="flex flex-col items-center">
-                        <span className="text-sm mb-1">{absoluteIndex + 1}</span>
-                        <div className="flex space-x-1">
+                        <span className="text-sm font-medium mb-1">{absoluteIndex + 1}</span>
+                        <div className="flex gap-1">
                           {['A', 'B', 'C', 'D', 'E'].map((option) => (
                             <button
                               key={option}
                               onClick={() => handleAnswerChange(absoluteIndex, option as Option)}
                               className={cn(
-                                "answer-button",
+                                "w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium transition-all",
                                 colorClass,
-                                subjectAnswers[absoluteIndex] === option && "selected"
+                                subjectAnswers[absoluteIndex] === option 
+                                  ? "selected shadow-md" 
+                                  : "hover:bg-opacity-10 hover:bg-gray-100"
                               )}
-                              aria-label={`Question ${absoluteIndex + 1}, Option ${option}`}
+                              aria-label={`Soru ${absoluteIndex + 1}, Şık ${option}`}
                             >
                               {option}
                             </button>
