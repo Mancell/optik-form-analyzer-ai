@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,23 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our app
+				turkish: {
+					DEFAULT: '#3B82F6', // blue-500
+					light: '#93C5FD', // blue-300
+				},
+				social: {
+					DEFAULT: '#10B981', // emerald-500
+					light: '#6EE7B7', // emerald-300
+				},
+				math: {
+					DEFAULT: '#8B5CF6', // violet-500
+					light: '#C4B5FD', // violet-300
+				},
+				science: {
+					DEFAULT: '#F59E0B', // amber-500
+					light: '#FCD34D', // amber-300
 				}
 			},
 			borderRadius: {
@@ -84,11 +102,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-scale': {
+					'0%, 100%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.05)' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-scale': 'pulse-scale 2s infinite'
 			}
 		}
 	},
