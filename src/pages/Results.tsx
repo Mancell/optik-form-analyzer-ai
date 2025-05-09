@@ -1,18 +1,65 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ResultsDisplay from "@/components/ResultsDisplay";
 import { useAnswers } from "@/contexts/AnswerContext";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Users, Table, ChartBar, ChartPie } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import StudentStatistics from "@/components/StudentStatistics";
+
+// Örnek sınıf verisi oluşturmak için yardımcı fonksiyon
+const generateClassData = () => {
+  // Öğrenci sayısı (5 ila 10 arası rastgele)
+  const studentCount = Math.floor(Math.random() * 6) + 5;
+  
+  // Öğrenci listesi oluştur
+  return Array(studentCount).fill(null).map((_, index) => ({
+    id: `ST${100 + index}`,
+    name: `Öğrenci ${index + 1}`,
+    results: {
+      turkish: {
+        correct: Math.floor(Math.random() * 20) + 5,
+        incorrect: Math.floor(Math.random() * 15),
+        empty: Math.floor(Math.random() * 10),
+        total: 30
+      },
+      social: {
+        correct: Math.floor(Math.random() * 20) + 5,
+        incorrect: Math.floor(Math.random() * 15),
+        empty: Math.floor(Math.random() * 10),
+        total: 30
+      },
+      math: {
+        correct: Math.floor(Math.random() * 20) + 5,
+        incorrect: Math.floor(Math.random() * 15),
+        empty: Math.floor(Math.random() * 10),
+        total: 30
+      },
+      science: {
+        correct: Math.floor(Math.random() * 20) + 5,
+        incorrect: Math.floor(Math.random() * 15),
+        empty: Math.floor(Math.random() * 10),
+        total: 30
+      }
+    }
+  }));
+};
 
 const Results: React.FC = () => {
   const { studentInfo } = useAnswers();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState("student");
+  const [classData, setClassData] = useState<any[]>([]);
 
-  // If no student info, redirect to home
+  // Sınıf verisi oluştur
+  useEffect(() => {
+    setClassData(generateClassData());
+  }, []);
+
+  // Eğer öğrenci bilgisi yoksa ana sayfaya yönlendir
   useEffect(() => {
     if (!studentInfo) {
       navigate("/");
@@ -44,7 +91,46 @@ const Results: React.FC = () => {
       </div>
       
       <div className="mb-8">
-        <ResultsDisplay />
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-3 w-full md:w-auto mx-auto mb-6">
+            <TabsTrigger value="student" className="flex items-center gap-1">
+              <ChartPie className="h-4 w-4" /> 
+              <span className={isMobile ? "hidden" : "inline"}>Öğrenci</span>
+            </TabsTrigger>
+            <TabsTrigger value="class" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className={isMobile ? "hidden" : "inline"}>Sınıf</span>
+            </TabsTrigger>
+            <TabsTrigger value="school" className="flex items-center gap-1">
+              <Table className="h-4 w-4" />
+              <span className={isMobile ? "hidden" : "inline"}>Okul</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="student" className="mt-0">
+            <ResultsDisplay />
+          </TabsContent>
+          
+          <TabsContent value="class" className="mt-0">
+            <StudentStatistics 
+              title="Sınıf İstatistikleri" 
+              students={classData} 
+              type="class" 
+            />
+          </TabsContent>
+
+          <TabsContent value="school" className="mt-0">
+            <StudentStatistics 
+              title="Okul İstatistikleri" 
+              students={[...classData, ...generateClassData()]} 
+              type="school" 
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
