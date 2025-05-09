@@ -5,9 +5,34 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import AnswerKeyInput from "@/components/AnswerKeyInput";
 import { useNavigate } from "react-router-dom";
 import { Camera, BarChart2, PenLine } from "lucide-react";
+import { useAnswers } from "@/contexts/AnswerContext";
+import { toast } from "@/hooks/use-toast";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { setStudentInfo } = useAnswers();
+
+  // Function to create sample student data and navigate to results
+  const handleViewSampleResults = () => {
+    // Sample student data
+    const sampleStudentInfo = {
+      name: "Örnek Öğrenci",
+      studentAnswers: {
+        turkish: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        social: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        math: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
+        science: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+      }
+    };
+    
+    // Set student info and navigate to results
+    setStudentInfo(sampleStudentInfo);
+    toast({
+      title: "Örnek sonuçlar hazırlanıyor",
+      description: "Sonuç sayfasına yönlendiriliyorsunuz..."
+    });
+    navigate("/results");
+  };
 
   return (
     <div className="container py-8 px-4 mx-auto">
@@ -18,6 +43,16 @@ const Home: React.FC = () => {
         <p className="text-muted-foreground max-w-2xl">
           Önce cevap anahtarını girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
         </p>
+        
+        {/* Add button to view sample results */}
+        <Button 
+          onClick={handleViewSampleResults}
+          variant="outline"
+          className="mt-3 bg-gradient-to-r from-primary/20 to-primary/5"
+        >
+          <BarChart2 className="mr-2 h-4 w-4" /> 
+          Örnek Sonuçları Görüntüle
+        </Button>
       </div>
 
       <div className="mb-12">
