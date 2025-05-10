@@ -1,5 +1,6 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
+import { toast } from "@/components/ui/sonner";
 
 export type Option = "A" | "B" | "C" | "D" | "E" | "";
 
@@ -146,6 +147,11 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setStudentInfo({
       ...studentInfo,
       examHistory: [newExam, ...examHistory]
+    });
+    
+    toast({
+      title: "Başarılı",
+      description: "Sınav sonuçları kaydedildi."
     });
   };
 

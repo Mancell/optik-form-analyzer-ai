@@ -11,7 +11,7 @@ import StudentStatistics from "@/components/StudentStatistics";
 import ExamHistory from "@/components/ExamHistory";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
 
 // Sample class data generator
