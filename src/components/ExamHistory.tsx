@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAnswers } from "@/contexts/AnswerContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,9 +22,14 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  TooltipProps,
 } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChartContainer, ChartTooltipContent, ChartTooltip } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
+
+// Define a type-safe NameType and ValueType 
+type NameType = string;
+type ValueType = number;
 
 const COLORS = {
   turkish: "#3B82F6",
@@ -33,6 +37,26 @@ const COLORS = {
   math: "#8B5CF6",
   science: "#F59E0B",
   total: "#6366F1",
+};
+
+// Custom tooltip component
+const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+  if (!active || !payload || payload.length === 0) return null;
+  
+  return (
+    <div className="bg-white p-3 border rounded shadow">
+      <p className="font-medium mb-1">{label}</p>
+      {payload.map((entry, index) => (
+        <div key={index} className="flex items-center gap-2">
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: entry.color }}
+          />
+          <span>{entry.name}: {entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 const ExamHistory: React.FC = () => {
@@ -184,9 +208,7 @@ const ExamHistory: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <ChartTooltip 
-                        content={props => <ChartTooltipContent {...props} />}
-                      />
+                      <Tooltip content={<CustomTooltip />} />
                       <Legend />
                       <Line
                         type="monotone"

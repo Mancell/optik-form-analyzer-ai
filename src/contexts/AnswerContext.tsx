@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { toast } from "@/components/ui/sonner";
 
@@ -149,10 +148,7 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       examHistory: [newExam, ...examHistory]
     });
     
-    toast({
-      title: "Başarılı",
-      description: "Sınav sonuçları kaydedildi."
-    });
+    toast.success("Sınav sonuçları kaydedildi.");
   };
 
   const value = {

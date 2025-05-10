@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -111,21 +110,14 @@ const Results: React.FC = () => {
 
   const handleSaveExam = () => {
     if (!examName.trim()) {
-      toast({
-        title: "Hata",
-        description: "Lütfen sınav adı girin.",
-        variant: "destructive"
-      });
+      toast.error("Lütfen sınav adı girin.");
       return;
     }
 
     addExamToHistory(examName);
     setSaveExamDialogOpen(false);
     
-    toast({
-      title: "Başarılı",
-      description: "Sınav sonuçları kaydedildi.",
-    });
+    toast.success("Sınav sonuçları kaydedildi.");
   };
 
   return (
