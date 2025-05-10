@@ -1,16 +1,20 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnswerKeyInput from "@/components/AnswerKeyInput";
+import AnswerKeyImport from "@/components/AnswerKeyImport";
 import { useNavigate } from "react-router-dom";
 import { Camera, BarChart2, PenLine } from "lucide-react";
 import { useAnswers } from "@/contexts/AnswerContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
+import { motion } from "framer-motion";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { setStudentInfo } = useAnswers();
+  const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
 
   // Function to create sample student data and navigate to results
   const handleViewSampleResults = () => {
@@ -18,50 +22,81 @@ const Home: React.FC = () => {
     const sampleStudentInfo = {
       name: "Örnek Öğrenci",
       studentAnswers: {
-        turkish: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        social: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        math: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
-        science: Array(30).fill("").map((_, i) => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        turkish: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        social: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        math: Array(30).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
+        science: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
       }
     };
     
     // Set student info and navigate to results
     setStudentInfo(sampleStudentInfo);
-    toast({
-      title: "Örnek sonuçlar hazırlanıyor",
-      description: "Sonuç sayfasına yönlendiriliyorsunuz..."
-    });
+    toast.success("Örnek sonuçlar hazırlanıyor...");
     navigate("/results");
   };
 
   return (
     <div className="container py-8 px-4 mx-auto">
       <div className="flex flex-col items-center justify-center mb-8 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Optik Form Analiz
-        </h1>
-        <p className="text-muted-foreground max-w-2xl">
-          Önce cevap anahtarını girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
-        </p>
-        
-        {/* Add button to view sample results */}
-        <Button 
-          onClick={handleViewSampleResults}
-          variant="outline"
-          className="mt-3 bg-gradient-to-r from-primary/20 to-primary/5"
+        <motion.h1 
+          className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <BarChart2 className="mr-2 h-4 w-4" /> 
-          Örnek Sonuçları Görüntüle
-        </Button>
+          Optik Form Analiz
+        </motion.h1>
+        <motion.p 
+          className="text-muted-foreground max-w-2xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          Önce cevap anahtarını girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
+        >
+          <Button 
+            onClick={handleViewSampleResults}
+            variant="outline"
+            className="mt-3 bg-gradient-to-r from-primary/20 to-primary/5"
+          >
+            <BarChart2 className="mr-2 h-4 w-4" /> 
+            Örnek Sonuçları Görüntüle
+          </Button>
+        </motion.div>
       </div>
 
-      <div className="mb-12">
+      <motion.div 
+        className="mb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+      >
         <Card className="shadow-lg border-t-4 border-t-primary">
           <CardHeader>
             <CardTitle className="text-center text-2xl">Cevap Anahtarı</CardTitle>
           </CardHeader>
           <CardContent>
-            <AnswerKeyInput />
+            <Tabs defaultValue="manual" value={activeTab} onValueChange={(value) => setActiveTab(value as "manual" | "import")}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="manual">Manuel Giriş</TabsTrigger>
+                <TabsTrigger value="import">PDF/Kamera ile İçe Aktar</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="manual" className="mt-0">
+                <AnswerKeyInput />
+              </TabsContent>
+              
+              <TabsContent value="import" className="mt-0">
+                <AnswerKeyImport />
+                <AnswerKeyInput />
+              </TabsContent>
+            </Tabs>
           </CardContent>
           <CardFooter className="flex justify-center pt-4 pb-6">
             <Button 
@@ -73,51 +108,51 @@ const Home: React.FC = () => {
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="overflow-hidden transition-all hover:shadow-md">
-          <div className="h-2 bg-turkish"></div>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PenLine className="h-5 w-5 text-turkish" />
-              <span>1. Cevap Anahtarı</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              4 ders (Türkçe, Sosyal, Matematik ve Fen) için doğru cevapları girin.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden transition-all hover:shadow-md">
-          <div className="h-2 bg-math"></div>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Camera className="h-5 w-5 text-math" />
-              <span>2. Form Tarama</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Öğrencinin doldurduğu optik formun fotoğrafını çekin veya yükleyin.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="overflow-hidden transition-all hover:shadow-md">
-          <div className="h-2 bg-science"></div>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-5 w-5 text-science" />
-              <span>3. Sonuçlar</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Doğru, yanlış ve boş sayılarını görüntüleyin ve performans analizine ulaşın.
-            </p>
-          </CardContent>
-        </Card>
+        {[
+          {
+            color: "turkish",
+            icon: <PenLine className="h-5 w-5 text-turkish" />,
+            title: "1. Cevap Anahtarı",
+            description: "4 ders (Türkçe, Sosyal, Matematik ve Fen) için doğru cevapları girin."
+          },
+          {
+            color: "math",
+            icon: <Camera className="h-5 w-5 text-math" />,
+            title: "2. Form Tarama",
+            description: "Öğrencinin doldurduğu optik formun fotoğrafını çekin veya yükleyin."
+          },
+          {
+            color: "science",
+            icon: <BarChart2 className="h-5 w-5 text-science" />,
+            title: "3. Sonuçlar",
+            description: "Doğru, yanlış ve boş sayılarını görüntüleyin ve performans analizine ulaşın."
+          }
+        ].map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 + index * 0.2, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden transition-all hover:shadow-md hover:scale-105 duration-300">
+              <div className={`h-2 bg-${item.color}`}></div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {item.icon}
+                  <span>{item.title}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  {item.description}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

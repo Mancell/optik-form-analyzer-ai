@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Option, SubjectAnswers, useAnswers } from "@/contexts/AnswerContext";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface AnswerSectionProps {
   subject: keyof SubjectAnswers;
@@ -12,8 +13,6 @@ interface AnswerSectionProps {
 }
 
 const AnswerKeyInput: React.FC = () => {
-  const { answerKey, setAnswerKey } = useAnswers();
-
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Tabs defaultValue="turkish" className="w-full">
@@ -66,6 +65,23 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
     });
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.03,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <Card className="border-t-4" style={{ borderTopColor: `var(--${colorClass.split('-')[1]})` }}>
       <CardHeader>
@@ -78,15 +94,24 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
             return (
               <div key={groupIndex}>
                 <h3 className="mb-3 font-medium">{startQuestion + 1}-{startQuestion + 10}. Sorular</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-4">
+                <motion.div
+                  className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-4"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
                   {[...Array(10)].map((_, questionIndex) => {
                     const absoluteIndex = startQuestion + questionIndex;
                     return (
-                      <div key={absoluteIndex} className="flex flex-col items-center">
+                      <motion.div 
+                        key={absoluteIndex} 
+                        className="flex flex-col items-center"
+                        variants={itemVariants}
+                      >
                         <span className="text-sm font-medium mb-1">{absoluteIndex + 1}</span>
                         <div className="flex gap-1">
                           {['A', 'B', 'C', 'D', 'E'].map((option) => (
-                            <button
+                            <motion.button
                               key={option}
                               onClick={() => handleAnswerChange(absoluteIndex, option as Option)}
                               className={cn(
@@ -96,16 +121,18 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
                                   ? "selected shadow-md" 
                                   : "hover:bg-opacity-10 hover:bg-gray-100"
                               )}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
                               aria-label={`Soru ${absoluteIndex + 1}, Şık ${option}`}
                             >
                               {option}
-                            </button>
+                            </motion.button>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
               </div>
             );
           })}
