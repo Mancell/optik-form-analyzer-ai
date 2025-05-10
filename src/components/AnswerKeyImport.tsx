@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,9 +28,8 @@ const AnswerKeyImport: React.FC = () => {
       setIsCapturing(true);
     } catch (error) {
       console.error("Error accessing camera:", error);
-      toast("Kamera erişimi sağlanamadı. Lütfen kamera izinlerini kontrol edin.", {
+      toast.error("Kamera erişimi sağlanamadı. Lütfen kamera izinlerini kontrol edin.", {
         description: "İzinleri kontrol edip tekrar deneyiniz.",
-        variant: "destructive"
       });
     }
   };
@@ -87,9 +85,7 @@ const AnswerKeyImport: React.FC = () => {
     } else if (file.type.startsWith('image/')) {
       readImageFile(file);
     } else {
-      toast("Lütfen sadece PDF veya resim dosyası yükleyin.", {
-        variant: "destructive"
-      });
+      toast.error("Lütfen sadece PDF veya resim dosyası yükleyin.");
     }
   };
   
@@ -102,7 +98,7 @@ const AnswerKeyImport: React.FC = () => {
     setTimeout(() => {
       const mockAnswerKey = generateMockAnswerKey();
       setAnswerKey(mockAnswerKey);
-      toast("Cevap anahtarı başarıyla içe aktarıldı.");
+      toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
     }, 1500);
   };
   
@@ -127,7 +123,7 @@ const AnswerKeyImport: React.FC = () => {
     setTimeout(() => {
       const mockAnswerKey = generateMockAnswerKey();
       setAnswerKey(mockAnswerKey);
-      toast("Cevap anahtarı başarıyla tespit edildi.");
+      toast.success("Cevap anahtarı başarıyla tespit edildi.");
     }, 1500);
   };
   
