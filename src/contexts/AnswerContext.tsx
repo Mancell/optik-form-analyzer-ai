@@ -37,10 +37,19 @@ export interface SubjectResults {
   };
 }
 
+export interface Exam {
+  id: string;
+  date: string;
+  name: string;
+  studentAnswers: SubjectAnswers;
+  results?: SubjectResults;
+}
+
 export interface StudentInfo {
   name: string;
   studentAnswers: SubjectAnswers;
   results?: SubjectResults;
+  examHistory?: Exam[];
 }
 
 interface AnswerContextProps {
@@ -49,6 +58,7 @@ interface AnswerContextProps {
   studentInfo: StudentInfo | null;
   setStudentInfo: React.Dispatch<React.SetStateAction<StudentInfo | null>>;
   calculateResults: () => void;
+  addExamToHistory: (examName: string) => void;
 }
 
 const AnswerContext = createContext<AnswerContextProps | undefined>(undefined);
@@ -119,12 +129,33 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   };
 
+  // Add the current exam to history
+  const addExamToHistory = (examName: string) => {
+    if (!studentInfo || !studentInfo.results) return;
+
+    const newExam: Exam = {
+      id: `exam-${Date.now()}`,
+      date: new Date().toISOString(),
+      name: examName,
+      studentAnswers: studentInfo.studentAnswers,
+      results: studentInfo.results
+    };
+
+    const examHistory = studentInfo.examHistory || [];
+    
+    setStudentInfo({
+      ...studentInfo,
+      examHistory: [newExam, ...examHistory]
+    });
+  };
+
   const value = {
     answerKey,
     setAnswerKey,
     studentInfo,
     setStudentInfo,
     calculateResults,
+    addExamToHistory
   };
 
   return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;
