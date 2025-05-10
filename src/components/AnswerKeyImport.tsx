@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,13 +95,13 @@ const AnswerKeyImport: React.FC = () => {
     toast("PDF işleniyor...");
     setIsProcessing(true);
     
-    // Simulate PDF processing with correct answer structure
+    // Simulate PDF processing with predefined answer key
     const reader = new FileReader();
     
     reader.onload = () => {
       setTimeout(() => {
-        const correctAnswerKey = generateCorrectAnswerKey();
-        setAnswerKey(correctAnswerKey);
+        const predefinedAnswerKey = generatePredefinedAnswerKey();
+        setAnswerKey(predefinedAnswerKey);
         toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
         setIsProcessing(false);
       }, 1500);
@@ -134,52 +133,47 @@ const AnswerKeyImport: React.FC = () => {
     reader.readAsDataURL(file);
   };
   
-  // Process the answer key image (simulated AI processing with corrected answer key)
+  // Process the answer key image (using predefined answer key)
   const processAnswerKeyImage = (imageDataUrl: string) => {
     toast("Cevap anahtarı görüntüsü işleniyor...");
     setIsProcessing(true);
     
     // In a real implementation, we would use a machine learning model
-    // For now, we'll simulate processing with a timeout and correct answer pattern
+    // For now, we'll use a predefined answer key instead of random answers
     setTimeout(() => {
-      const correctAnswerKey = generateCorrectAnswerKey();
-      setAnswerKey(correctAnswerKey);
+      const predefinedAnswerKey = generatePredefinedAnswerKey();
+      setAnswerKey(predefinedAnswerKey);
       toast.success("Cevap anahtarı başarıyla tespit edildi.");
       setIsProcessing(false);
     }, 1500);
   };
   
-  // Generate a consistent, correctly structured answer key 
-  // This ensures proper question counts and format for each subject
-  const generateCorrectAnswerKey = (): SubjectAnswers => {
-    const turkishAnswers: Option[] = [];
-    const socialAnswers: Option[] = [];
-    const mathAnswers: Option[] = [];
-    const scienceAnswers: Option[] = [];
+  // Generate a predefined answer key with realistic patterns
+  const generatePredefinedAnswerKey = (): SubjectAnswers => {
+    // Gerçekçi bir cevap anahtarı tanımlayalım
+    const turkishAnswers: Option[] = [
+      "C", "A", "E", "D", "B", "A", "C", "D", "E", "B", // 1-10
+      "A", "E", "B", "C", "D", "B", "A", "C", "E", "D", // 11-20
+      "E", "C", "A", "B", "D", "E", "C", "B", "A", "D", // 21-30
+      "B", "C", "E", "A", "D", "B", "C", "A", "E", "D"  // 31-40
+    ];
     
-    // Define a pattern for each subject
-    const options: Option[] = ["A", "B", "C", "D", "E"];
+    const socialAnswers: Option[] = [
+      "B", "D", "A", "E", "C", "B", "A", "D", "E", "C", // 1-10
+      "A", "B", "E", "C", "D", "B", "A", "D", "C", "E"  // 11-20
+    ];
     
-    // Generate answers using consistent patterns for testing
-    // Türkçe - 40 questions
-    for (let i = 0; i < 40; i++) {
-      turkishAnswers.push(options[i % 5]);
-    }
+    const mathAnswers: Option[] = [
+      "D", "B", "E", "A", "C", "D", "B", "A", "E", "C", // 1-10
+      "A", "D", "C", "E", "B", "A", "C", "E", "D", "B", // 11-20
+      "C", "E", "A", "D", "B", "C", "A", "E", "D", "B", // 21-30
+      "D", "C", "B", "E", "A", "D", "B", "C", "E", "A"  // 31-40
+    ];
     
-    // Sosyal Bilimler - 20 questions
-    for (let i = 0; i < 20; i++) {
-      socialAnswers.push(options[(i + 1) % 5]);
-    }
-    
-    // Temel Matematik - 40 questions
-    for (let i = 0; i < 40; i++) {
-      mathAnswers.push(options[(i + 2) % 5]);
-    }
-    
-    // Fen Bilimleri - 20 questions
-    for (let i = 0; i < 20; i++) {
-      scienceAnswers.push(options[(i + 3) % 5]);
-    }
+    const scienceAnswers: Option[] = [
+      "A", "C", "E", "B", "D", "A", "C", "E", "B", "D", // 1-10
+      "D", "B", "C", "A", "E", "D", "B", "C", "A", "E"  // 11-20
+    ];
     
     return {
       turkish: turkishAnswers,
