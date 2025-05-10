@@ -3,12 +3,11 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, Upload, FileUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { useAnswers, SubjectAnswers, Option } from "@/contexts/AnswerContext";
 
 const AnswerKeyImport: React.FC = () => {
   const { setAnswerKey } = useAnswers();
-  const { toast } = useToast();
   
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -30,7 +29,10 @@ const AnswerKeyImport: React.FC = () => {
       setIsCapturing(true);
     } catch (error) {
       console.error("Error accessing camera:", error);
-      toast.error("Kamera erişimi sağlanamadı. Lütfen kamera izinlerini kontrol edin.");
+      toast("Kamera erişimi sağlanamadı. Lütfen kamera izinlerini kontrol edin.", {
+        description: "İzinleri kontrol edip tekrar deneyiniz.",
+        variant: "destructive"
+      });
     }
   };
   
@@ -85,20 +87,22 @@ const AnswerKeyImport: React.FC = () => {
     } else if (file.type.startsWith('image/')) {
       readImageFile(file);
     } else {
-      toast.error("Lütfen sadece PDF veya resim dosyası yükleyin.");
+      toast("Lütfen sadece PDF veya resim dosyası yükleyin.", {
+        variant: "destructive"
+      });
     }
   };
   
   // Read and process PDF file
   const readPdfFile = (file: File) => {
-    toast.success("PDF işleniyor...");
+    toast("PDF işleniyor...");
     
     // In a real implementation, we would use a PDF parsing library
     // For now, we'll simulate processing with a timeout
     setTimeout(() => {
       const mockAnswerKey = generateMockAnswerKey();
       setAnswerKey(mockAnswerKey);
-      toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
+      toast("Cevap anahtarı başarıyla içe aktarıldı.");
     }, 1500);
   };
   
@@ -116,14 +120,14 @@ const AnswerKeyImport: React.FC = () => {
   
   // Process the answer key image (simulated AI processing)
   const processAnswerKeyImage = (imageDataUrl: string) => {
-    toast.success("Cevap anahtarı görüntüsü işleniyor...");
+    toast("Cevap anahtarı görüntüsü işleniyor...");
     
     // In a real implementation, we would use a machine learning model
     // For now, we'll simulate processing with a timeout
     setTimeout(() => {
       const mockAnswerKey = generateMockAnswerKey();
       setAnswerKey(mockAnswerKey);
-      toast.success("Cevap anahtarı başarıyla tespit edildi.");
+      toast("Cevap anahtarı başarıyla tespit edildi.");
     }, 1500);
   };
   
