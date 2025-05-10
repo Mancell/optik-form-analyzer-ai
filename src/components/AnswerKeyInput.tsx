@@ -10,6 +10,7 @@ interface AnswerSectionProps {
   subject: keyof SubjectAnswers;
   subjectLabel: string;
   colorClass: string;
+  questionCount: number;
 }
 
 const AnswerKeyInput: React.FC = () => {
@@ -21,37 +22,37 @@ const AnswerKeyInput: React.FC = () => {
             Türkçe
           </TabsTrigger>
           <TabsTrigger value="social" className="text-social">
-            Sosyal
+            Sosyal Bilimler
           </TabsTrigger>
           <TabsTrigger value="math" className="text-math">
-            Matematik
+            Temel Matematik
           </TabsTrigger>
           <TabsTrigger value="science" className="text-science">
-            Fen
+            Fen Bilimleri
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="turkish">
-          <AnswerSection subject="turkish" subjectLabel="Türkçe" colorClass="subject-turkish" />
+          <AnswerSection subject="turkish" subjectLabel="Türkçe" colorClass="subject-turkish" questionCount={40} />
         </TabsContent>
         
         <TabsContent value="social">
-          <AnswerSection subject="social" subjectLabel="Sosyal" colorClass="subject-social" />
+          <AnswerSection subject="social" subjectLabel="Sosyal Bilimler" colorClass="subject-social" questionCount={20} />
         </TabsContent>
         
         <TabsContent value="math">
-          <AnswerSection subject="math" subjectLabel="Matematik" colorClass="subject-math" />
+          <AnswerSection subject="math" subjectLabel="Temel Matematik" colorClass="subject-math" questionCount={40} />
         </TabsContent>
         
         <TabsContent value="science">
-          <AnswerSection subject="science" subjectLabel="Fen" colorClass="subject-science" />
+          <AnswerSection subject="science" subjectLabel="Fen Bilimleri" colorClass="subject-science" questionCount={20} />
         </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, colorClass }) => {
+const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, colorClass, questionCount }) => {
   const { answerKey, setAnswerKey } = useAnswers();
   const subjectAnswers = answerKey[subject];
 
@@ -64,6 +65,9 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
       return newAnswers;
     });
   };
+
+  // Hesapla kaç grup gösterilmeli
+  const groupCount = Math.ceil(questionCount / 10);
 
   // Animation variants
   const containerVariants = {
@@ -85,22 +89,25 @@ const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, co
   return (
     <Card className="border-t-4" style={{ borderTopColor: `var(--${colorClass.split('-')[1]})` }}>
       <CardHeader>
-        <CardTitle>{subjectLabel} Cevap Anahtarı</CardTitle>
+        <CardTitle>{subjectLabel} Cevap Anahtarı ({questionCount} Soru)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {[...Array(3)].map((_, groupIndex) => {
+          {[...Array(groupCount)].map((_, groupIndex) => {
             const startQuestion = groupIndex * 10;
+            const endQuestion = Math.min(startQuestion + 10, questionCount);
+            const questionsInGroup = endQuestion - startQuestion;
+
             return (
               <div key={groupIndex}>
-                <h3 className="mb-3 font-medium">{startQuestion + 1}-{startQuestion + 10}. Sorular</h3>
+                <h3 className="mb-3 font-medium">{startQuestion + 1}-{endQuestion}. Sorular</h3>
                 <motion.div
                   className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-4"
                   variants={containerVariants}
                   initial="hidden"
                   animate="show"
                 >
-                  {[...Array(10)].map((_, questionIndex) => {
+                  {[...Array(questionsInGroup)].map((_, questionIndex) => {
                     const absoluteIndex = startQuestion + questionIndex;
                     return (
                       <motion.div 

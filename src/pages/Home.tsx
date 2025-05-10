@@ -18,14 +18,14 @@ const Home: React.FC = () => {
 
   // Function to create sample student data and navigate to results
   const handleViewSampleResults = () => {
-    // Sample student data
+    // Sample student data with updated question counts
     const sampleStudentInfo = {
       name: "Örnek Öğrenci",
       studentAnswers: {
-        turkish: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        social: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        math: Array(30).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
-        science: Array(30).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
+        science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
       }
     };
     
@@ -116,7 +116,7 @@ const Home: React.FC = () => {
             color: "turkish",
             icon: <PenLine className="h-5 w-5 text-turkish" />,
             title: "1. Cevap Anahtarı",
-            description: "4 ders (Türkçe, Sosyal, Matematik ve Fen) için doğru cevapları girin."
+            description: "4 ders (Türkçe, Sosyal Bilimler, Temel Matematik ve Fen Bilimleri) için doğru cevapları girin."
           },
           {
             color: "math",

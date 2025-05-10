@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { toast } from "@/components/ui/sonner";
 
@@ -76,12 +77,12 @@ const createEmptyAnswerArray = (length: number): Option[] => {
   return Array(length).fill("");
 };
 
-// Default empty answer key structure
+// Default empty answer key structure with updated question counts
 const defaultAnswerKey: SubjectAnswers = {
-  turkish: createEmptyAnswerArray(30),
-  social: createEmptyAnswerArray(30),
-  math: createEmptyAnswerArray(30),
-  science: createEmptyAnswerArray(30),
+  turkish: createEmptyAnswerArray(40),
+  social: createEmptyAnswerArray(20),
+  math: createEmptyAnswerArray(40),
+  science: createEmptyAnswerArray(20),
 };
 
 export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

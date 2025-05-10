@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ const AnswerKeyImport: React.FC = () => {
   
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,23 +94,41 @@ const AnswerKeyImport: React.FC = () => {
   // Read and process PDF file
   const readPdfFile = (file: File) => {
     toast("PDF işleniyor...");
+    setIsProcessing(true);
     
-    // In a real implementation, we would use a PDF parsing library
-    // For now, we'll simulate processing with a timeout
-    setTimeout(() => {
-      const mockAnswerKey = generateMockAnswerKey();
-      setAnswerKey(mockAnswerKey);
-      toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
-    }, 1500);
+    // PDF dosyasını okuyalım
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      setTimeout(() => {
+        const mockAnswerKey = generateMockAnswerKey();
+        setAnswerKey(mockAnswerKey);
+        toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
+        setIsProcessing(false);
+      }, 1500);
+    };
+    
+    reader.onerror = () => {
+      toast.error("PDF dosyası okunamadı.");
+      setIsProcessing(false);
+    };
+    
+    reader.readAsArrayBuffer(file);
   };
   
   // Read and process image file
   const readImageFile = (file: File) => {
     const reader = new FileReader();
+    setIsProcessing(true);
     
     reader.onload = (e) => {
       const imageDataUrl = e.target?.result as string;
       processAnswerKeyImage(imageDataUrl);
+    };
+    
+    reader.onerror = () => {
+      toast.error("Resim dosyası okunamadı.");
+      setIsProcessing(false);
     };
     
     reader.readAsDataURL(file);
@@ -117,6 +137,7 @@ const AnswerKeyImport: React.FC = () => {
   // Process the answer key image (simulated AI processing)
   const processAnswerKeyImage = (imageDataUrl: string) => {
     toast("Cevap anahtarı görüntüsü işleniyor...");
+    setIsProcessing(true);
     
     // In a real implementation, we would use a machine learning model
     // For now, we'll simulate processing with a timeout
@@ -124,6 +145,7 @@ const AnswerKeyImport: React.FC = () => {
       const mockAnswerKey = generateMockAnswerKey();
       setAnswerKey(mockAnswerKey);
       toast.success("Cevap anahtarı başarıyla tespit edildi.");
+      setIsProcessing(false);
     }, 1500);
   };
   
@@ -131,18 +153,23 @@ const AnswerKeyImport: React.FC = () => {
   const generateMockAnswerKey = (): SubjectAnswers => {
     const options: Option[] = ["A", "B", "C", "D", "E"];
     
-    const generateSubjectAnswers = () => {
-      return Array(30).fill("").map(() => {
+    return {
+      turkish: Array(40).fill("").map(() => {
         const randomIndex = Math.floor(Math.random() * 5);
         return options[randomIndex];
-      });
-    };
-    
-    return {
-      turkish: generateSubjectAnswers(),
-      social: generateSubjectAnswers(),
-      math: generateSubjectAnswers(),
-      science: generateSubjectAnswers()
+      }),
+      social: Array(20).fill("").map(() => {
+        const randomIndex = Math.floor(Math.random() * 5);
+        return options[randomIndex];
+      }),
+      math: Array(40).fill("").map(() => {
+        const randomIndex = Math.floor(Math.random() * 5);
+        return options[randomIndex];
+      }),
+      science: Array(20).fill("").map(() => {
+        const randomIndex = Math.floor(Math.random() * 5);
+        return options[randomIndex];
+      })
     };
   };
   
@@ -192,7 +219,7 @@ const AnswerKeyImport: React.FC = () => {
           
           {!isCapturing && !capturedImage && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button onClick={startCamera} className="flex items-center justify-center">
+              <Button onClick={startCamera} className="flex items-center justify-center" disabled={isProcessing}>
                 <Camera className="mr-2 h-4 w-4" /> Kamera ile Çek
               </Button>
               
@@ -200,6 +227,7 @@ const AnswerKeyImport: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()} 
                 variant="outline"
                 className="flex items-center justify-center"
+                disabled={isProcessing}
               >
                 <FileUp className="mr-2 h-4 w-4" /> Dosya Yükle
               </Button>
@@ -210,6 +238,13 @@ const AnswerKeyImport: React.FC = () => {
                 accept="application/pdf,image/*"
                 className="hidden"
               />
+            </div>
+          )}
+          
+          {isProcessing && (
+            <div className="flex justify-center items-center py-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary"></div>
+              <span className="ml-2 text-sm text-muted-foreground">İşleniyor...</span>
             </div>
           )}
         </div>
