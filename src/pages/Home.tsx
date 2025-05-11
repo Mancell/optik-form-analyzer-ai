@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,11 +12,22 @@ import { useAnswers } from "@/contexts/AnswerContext";
 import { toast } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
 
+const DEFAULT_API_KEY = "AIzaSyAw7CDaiZuQKn60ISltYTnzi18HvX2OQ3I";
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { setStudentInfo } = useAnswers();
   const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
   const [showGeminiSettings, setShowGeminiSettings] = useState(false);
+  
+  // Pre-save the Gemini API key when the app loads
+  useEffect(() => {
+    const savedKey = localStorage.getItem("geminiApiKey");
+    if (!savedKey) {
+      localStorage.setItem("geminiApiKey", DEFAULT_API_KEY);
+      toast.success("Gemini API anahtarı otomatik olarak ayarlandı");
+    }
+  }, []);
 
   // Function to create sample student data and navigate to results
   const handleViewSampleResults = () => {
@@ -77,7 +89,7 @@ const Home: React.FC = () => {
             className={showGeminiSettings ? "bg-gradient-to-r from-purple-500 to-blue-500" : ""}
           >
             <Sparkles className="mr-2 h-4 w-4" /> 
-            Gemini AI Ayarları
+            {showGeminiSettings ? "Gemini AI Ayarlarını Gizle" : "Gemini AI Ayarları"}
           </Button>
         </motion.div>
         
