@@ -1,12 +1,12 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnswerKeyInput from "@/components/AnswerKeyInput";
 import AnswerKeyImport from "@/components/AnswerKeyImport";
+import GeminiSettings from "@/components/GeminiSettings";
 import { useNavigate } from "react-router-dom";
-import { Camera, BarChart2, PenLine } from "lucide-react";
+import { Camera, BarChart2, PenLine, Sparkles } from "lucide-react";
 import { useAnswers } from "@/contexts/AnswerContext";
 import { toast } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
@@ -15,6 +15,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { setStudentInfo } = useAnswers();
   const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
+  const [showGeminiSettings, setShowGeminiSettings] = useState(false);
 
   // Function to create sample student data and navigate to results
   const handleViewSampleResults = () => {
@@ -52,23 +53,43 @@ const Home: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          Önce cevap anahtarını girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
+          Önce cevap anahtarı girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
         </motion.p>
         
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.3 }}
+          className="flex flex-col sm:flex-row gap-3 mt-3"
         >
           <Button 
             onClick={handleViewSampleResults}
             variant="outline"
-            className="mt-3 bg-gradient-to-r from-primary/20 to-primary/5"
+            className="bg-gradient-to-r from-primary/20 to-primary/5"
           >
             <BarChart2 className="mr-2 h-4 w-4" /> 
             Örnek Sonuçları Görüntüle
           </Button>
+          
+          <Button 
+            onClick={() => setShowGeminiSettings(!showGeminiSettings)}
+            variant={showGeminiSettings ? "default" : "outline"}
+            className={showGeminiSettings ? "bg-gradient-to-r from-purple-500 to-blue-500" : ""}
+          >
+            <Sparkles className="mr-2 h-4 w-4" /> 
+            Gemini AI Ayarları
+          </Button>
         </motion.div>
+        
+        {showGeminiSettings && (
+          <motion.div 
+            className="mt-4 w-full max-w-md"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <GeminiSettings />
+          </motion.div>
+        )}
       </div>
 
       <motion.div 
