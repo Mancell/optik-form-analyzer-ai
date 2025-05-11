@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import AnswerKeyInput from "@/components/AnswerKeyInput";
 import AnswerKeyImport from "@/components/AnswerKeyImport";
 import { useNavigate } from "react-router-dom";
-import { Camera, BarChart2, PenLine, Sparkles } from "lucide-react";
+import { Camera, BarChart2, PenLine, Sparkles, Search } from "lucide-react";
 import { useAnswers } from "@/contexts/AnswerContext";
 import { toast } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
@@ -17,6 +18,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { setStudentInfo } = useAnswers();
   const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Pre-save the Gemini API key when the app loads
   useEffect(() => {
@@ -46,6 +48,17 @@ const Home: React.FC = () => {
     navigate("/results");
   };
 
+  // Arama işlemi
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      toast.success("Öğrenci aranıyor: " + searchQuery);
+      navigate("/results");
+    } else {
+      toast.error("Lütfen bir arama terimi girin");
+    }
+  };
+
   return (
     <div className="container py-8 px-4 mx-auto">
       <div className="flex flex-col items-center justify-center mb-8 text-center">
@@ -65,6 +78,25 @@ const Home: React.FC = () => {
         >
           Önce cevap anahtarı girin, sonra öğrenci formunun fotoğrafını çekerek analiz sonuçlarını görüntüleyin.
         </motion.p>
+        
+        {/* Arama çubuğu */}
+        <motion.form 
+          className="w-full max-w-md mt-4 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          onSubmit={handleSearch}
+        >
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Öğrenci adı veya ID ile ara..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </motion.form>
         
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

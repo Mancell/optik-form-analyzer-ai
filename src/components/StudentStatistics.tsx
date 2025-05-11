@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -22,6 +22,8 @@ import {
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface StudentResult {
   id: string;
@@ -76,10 +78,21 @@ const LESSON_NAMES = {
 
 const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, type }) => {
   const isMobile = useIsMobile();
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Arama sorgusuna göre filtrelenmiş öğrenci listesi
+  const filteredStudents = useMemo(() => {
+    if (!searchQuery.trim()) return students;
+    
+    return students.filter(student => 
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [students, searchQuery]);
   
   // Sınıf ortalamalarını hesapla
   const averages = useMemo(() => {
-    if (students.length === 0) return null;
+    if (filteredStudents.length === 0) return null;
     
     const sums = {
       turkish: { correct: 0, incorrect: 0, empty: 0, total: 0 },
@@ -88,7 +101,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
       science: { correct: 0, incorrect: 0, empty: 0, total: 0 },
     };
     
-    students.forEach(student => {
+    filteredStudents.forEach(student => {
       Object.keys(sums).forEach(subject => {
         const typedSubject = subject as keyof typeof sums;
         sums[typedSubject].correct += student.results[typedSubject].correct;
@@ -98,7 +111,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
       });
     });
     
-    const count = students.length;
+    const count = filteredStudents.length;
     return {
       turkish: {
         correct: +(sums.turkish.correct / count).toFixed(1),
@@ -129,11 +142,11 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
         total: sums.science.total
       }
     };
-  }, [students]);
+  }, [filteredStudents]);
 
   // Tablo için veri hazırlama
   const tableData = useMemo(() => {
-    return students.map(student => {
+    return filteredStudents.map(student => {
       // Net puanları hesapla
       const turkishNet = +(student.results.turkish.correct - student.results.turkish.incorrect / 4).toFixed(2);
       const socialNet = +(student.results.social.correct - student.results.social.incorrect / 4).toFixed(2);
@@ -158,7 +171,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
         percentage
       };
     }).sort((a, b) => b.totalNet - a.totalNet);
-  }, [students]);
+  }, [filteredStudents]);
 
   // Grafik için veri hazırlama
   const chartData = useMemo(() => {
@@ -202,6 +215,24 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
 
   return (
     <div className="space-y-6">
+      {/* Arama Çubuğu */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Öğrenci adı veya ID ile ara..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+        {searchQuery && (
+          <div className="mt-2">
+            <Badge variant="outline">
+              {filteredStudents.length} öğrenci bulundu
+            </Badge>
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="overflow-hidden">
           <div className="h-2" style={{ backgroundColor: COLORS.turkish }}></div>
