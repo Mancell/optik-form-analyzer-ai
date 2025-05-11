@@ -114,8 +114,10 @@ const AnswerKeyImport: React.FC = () => {
         throw new Error("Desteklenmeyen veri formatı");
       }
       
-      // Geliştirilmiş Gemini API prompt
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+      console.log("Calling Gemini API with model: gemini-1.5-flash");
+      
+      // Updated API endpoint and model name from gemini-pro-vision to gemini-1.5-flash
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -274,19 +276,15 @@ const AnswerKeyImport: React.FC = () => {
           setAnswerKey(geminiResult);
           toast.success("Cevap anahtarı Gemini AI ile başarıyla işlendi.");
         } else {
-          // Fall back to predefined answer key if Gemini fails
-          const predefinedAnswerKey = generatePredefinedAnswerKey();
-          setAnswerKey(predefinedAnswerKey);
-          toast.success("PDF işlenemedi, varsayılan cevap anahtarı yüklendi.");
+          // Show error instead of falling back to predefined answer key
+          toast.error("PDF işlenemedi. Lütfen farklı bir PDF dosyası deneyin veya manuel giriş yapın.");
         }
       } catch (error) {
         console.error("PDF processing error:", error);
         toast.error("PDF işleme hatası: " + (error as Error).message);
         
-        // Fall back to predefined answer key
-        const predefinedAnswerKey = generatePredefinedAnswerKey();
-        setAnswerKey(predefinedAnswerKey);
-        toast.info("Varsayılan cevap anahtarı kullanıldı.");
+        // Show error instead of falling back to predefined answer key
+        toast.error("Cevap anahtarı işlenemedi. Lütfen manuel giriş yapın.");
       } finally {
         setIsProcessing(false);
       }
@@ -316,15 +314,15 @@ const AnswerKeyImport: React.FC = () => {
           setAnswerKey(geminiResult);
           toast.success("Cevap anahtarı Gemini AI ile başarıyla işlendi.");
         } else {
-          // Fall back to predefined answer key
-          processAnswerKeyImage(imageDataUrl);
+          // Show error instead of falling back to predefined answer key
+          toast.error("Görüntü işlenemedi. Lütfen farklı bir görüntü deneyin veya manuel giriş yapın.");
         }
       } catch (error) {
         console.error("Image processing error:", error);
-        toast.error("Resim işleme hatası: " + (error as Error).message);
+        toast.error("Görüntü işleme hatası: " + (error as Error).message);
         
-        // Fall back to predefined answer key
-        processAnswerKeyImage(imageDataUrl);
+        // Show error instead of falling back to predefined answer key
+        toast.error("Cevap anahtarı işlenemedi. Lütfen manuel giriş yapın.");
       } finally {
         setIsProcessing(false);
       }
@@ -338,19 +336,28 @@ const AnswerKeyImport: React.FC = () => {
     reader.readAsDataURL(file);
   };
   
-  // Process the answer key image (using predefined answer key)
+  // Process the answer key image
   const processAnswerKeyImage = (imageDataUrl: string) => {
     toast("Cevap anahtarı görüntüsü işleniyor...");
     setIsProcessing(true);
     
-    // In a real implementation, we would use a machine learning model
-    // For now, we'll use a predefined answer key instead of random answers
-    setTimeout(() => {
-      const predefinedAnswerKey = generatePredefinedAnswerKey();
-      setAnswerKey(predefinedAnswerKey);
-      toast.success("Cevap anahtarı başarıyla yüklendi.");
-      setIsProcessing(false);
-    }, 1500);
+    // Process with Gemini AI instead of using predefined answers
+    processWithGeminiAI(imageDataUrl, 'image')
+      .then(result => {
+        if (result) {
+          setAnswerKey(result);
+          toast.success("Cevap anahtarı başarıyla işlendi.");
+        } else {
+          toast.error("Görüntü işlenemedi. Lütfen manuel giriş yapın.");
+        }
+      })
+      .catch(error => {
+        console.error("Image processing error:", error);
+        toast.error("Görüntü işleme hatası: " + error.message);
+      })
+      .finally(() => {
+        setIsProcessing(false);
+      });
   };
   
   // Generate a predefined answer key with realistic patterns

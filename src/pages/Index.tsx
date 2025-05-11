@@ -3,12 +3,17 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, BarChart2, Camera, BookOpen } from "lucide-react";
+import { Search, BarChart2, Camera, BookOpen, Github, Code } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
+
+  // Function to open GitHub repository
+  const openSourceCode = () => {
+    window.open("https://github.com/your-username/optik-form-analiz", "_blank");
+  };
 
   return (
     <div className="container py-8 px-4 mx-auto min-h-screen">
@@ -22,13 +27,30 @@ const Index: React.FC = () => {
           Optik Form Analiz
         </motion.h1>
         <motion.p 
-          className="text-muted-foreground max-w-2xl mb-8"
+          className="text-muted-foreground max-w-2xl mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           Optik formları tarayın, sonuçları analiz edin ve öğrenci performansını takip edin.
         </motion.p>
+        
+        {/* Source Code Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.3 }}
+          className="mb-6"
+        >
+          <Button 
+            onClick={() => window.open("https://lovable.dev/projects/701521c8-d263-49c7-8310-de7717e1adbf", "_blank")}
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <Code className="h-4 w-4" /> 
+            Kaynak Kodu Görüntüle
+          </Button>
+        </motion.div>
         
         {/* Arama çubuğu */}
         <motion.div 
@@ -98,6 +120,37 @@ const Index: React.FC = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Form Limits Information */}
+      <motion.div 
+        className="mt-12 text-center max-w-2xl mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.3, duration: 0.5 }}
+      >
+        <h3 className="text-lg font-medium mb-2">Form Giriş Bilgileri</h3>
+        <p className="text-muted-foreground text-sm mb-4">
+          Bu uygulama şu anda şu formları destekler:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div className="bg-muted/30 p-4 rounded-lg">
+            <p className="font-medium mb-1">Türkçe</p>
+            <p>40 soru</p>
+          </div>
+          <div className="bg-muted/30 p-4 rounded-lg">
+            <p className="font-medium mb-1">Sosyal Bilimler</p>
+            <p>20 soru</p>
+          </div>
+          <div className="bg-muted/30 p-4 rounded-lg">
+            <p className="font-medium mb-1">Matematik</p>
+            <p>40 soru</p>
+          </div>
+          <div className="bg-muted/30 p-4 rounded-lg">
+            <p className="font-medium mb-1">Fen Bilimleri</p>
+            <p>20 soru</p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
