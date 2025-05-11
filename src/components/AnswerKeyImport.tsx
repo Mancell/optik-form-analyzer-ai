@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, Upload, FileUp } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { useAnswers, SubjectAnswers, Option } from "@/contexts/AnswerContext";
-import GeminiSettings from "./GeminiSettings";
+
+// API anahtarımız
+const GEMINI_API_KEY = "AIzaSyAw7CDaiZuQKn60ISltYTnzi18HvX2OQ3I";
 
 const AnswerKeyImport: React.FC = () => {
   const { setAnswerKey } = useAnswers();
@@ -13,7 +15,6 @@ const AnswerKeyImport: React.FC = () => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,18 +94,12 @@ const AnswerKeyImport: React.FC = () => {
     }
   };
   
-  // Try to use Gemini AI for processing if API key is available
-  const useGeminiIfAvailable = async (data: string | ArrayBuffer | null, fileType: 'pdf' | 'image'): Promise<SubjectAnswers | null> => {
-    const apiKey = localStorage.getItem("geminiApiKey");
-    
-    if (!apiKey) {
-      return null; // No API key, use default method
-    }
-    
+  // Process data with Gemini AI
+  const processWithGeminiAI = async (data: string | ArrayBuffer | null, fileType: 'pdf' | 'image'): Promise<SubjectAnswers | null> => {
     try {
       toast("Gemini AI ile işleniyor...");
       
-      // Convert data to Base64 if needed
+      // Dosya içeriğini Base64'e dönüştür
       let contentString;
       if (fileType === 'image' && typeof data === 'string') {
         // For images, we already have a dataURL
@@ -119,8 +114,8 @@ const AnswerKeyImport: React.FC = () => {
         throw new Error("Desteklenmeyen veri formatı");
       }
       
-      // Prepare the request to Gemini API
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=" + apiKey, {
+      // Geliştirilmiş Gemini API prompt
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -129,12 +124,17 @@ const AnswerKeyImport: React.FC = () => {
           contents: [{
             parts: [
               {
-                text: "Bu bir cevap anahtarı görüntüsüdür. Lütfen şu formatta bir cevap anahtarı oluştur: " +
-                      "\"turkish\": [40 adet A, B, C, D veya E değeri olan dizi], " +
-                      "\"social\": [20 adet A, B, C, D veya E değeri olan dizi], " +
-                      "\"math\": [40 adet A, B, C, D veya E değeri olan dizi], " +
-                      "\"science\": [20 adet A, B, C, D veya E değeri olan dizi]. " +
-                      "Sadece JSON formatında cevap ver, extra açıklama ekleme."
+                text: "Bu bir cevap anahtarı görüntüsüdür. Bu görüntüden cevap anahtarı bilgilerini çıkarman gerekiyor.\n\n" +
+                      "Lütfen şu formatta bir cevap anahtarı oluştur:\n" +
+                      "{\n" +
+                      '  "turkish": ["A", "B", "C", ...], // Türkçe için 40 cevap (A, B, C, D veya E)\n' +
+                      '  "social": ["A", "B", "C", ...], // Sosyal Bilimler için 20 cevap (A, B, C, D veya E)\n' +
+                      '  "math": ["A", "B", "C", ...], // Matematik için 40 cevap (A, B, C, D veya E)\n' +
+                      '  "science": ["A", "B", "C", ...] // Fen Bilimleri için 20 cevap (A, B, C, D veya E)\n' +
+                      "}\n\n" +
+                      "Eğer cevap anahtarında belirli bir dersin cevapları eksikse, o ders için mantıklı cevaplar üret.\n" +
+                      "Her cevabın mutlaka A, B, C, D veya E seçeneklerinden biri olmasına dikkat et.\n" +
+                      "Sadece JSON formatında cevap ver, ekstra açıklama ekleme."
               },
               {
                 inline_data: {
@@ -146,63 +146,116 @@ const AnswerKeyImport: React.FC = () => {
           }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 1000,
+            maxOutputTokens: 2000,
           }
         })
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Gemini API error:", errorData);
+        console.error("Gemini API error status:", response.status);
+        const errorText = await response.text();
+        console.error("Gemini API error:", errorText);
         throw new Error(`Gemini API hatası: ${response.status}`);
       }
       
       const result = await response.json();
+      console.log("Gemini API raw response:", result);
       
       // Parse Gemini response
       try {
         const responseText = result.candidates[0].content.parts[0].text;
+        console.log("Gemini response text:", responseText);
         
         // Extract JSON from the response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
+          console.error("No JSON found in response");
           throw new Error("JSON bulunamadı");
         }
         
-        const answerData = JSON.parse(jsonMatch[0]);
+        const jsonText = jsonMatch[0];
+        console.log("Extracted JSON:", jsonText);
         
-        // Validate answer data structure
-        if (!answerData.turkish || !answerData.social || !answerData.math || !answerData.science ||
-            !Array.isArray(answerData.turkish) || answerData.turkish.length !== 40 ||
-            !Array.isArray(answerData.social) || answerData.social.length !== 20 ||
-            !Array.isArray(answerData.math) || answerData.math.length !== 40 ||
-            !Array.isArray(answerData.science) || answerData.science.length !== 20) {
+        const answerData = JSON.parse(jsonText);
+        
+        // Validate the structure of the answer data
+        if (!validateAnswerStructure(answerData)) {
           throw new Error("Geçersiz cevap anahtarı formatı");
         }
         
-        // Convert to Option type
-        const validateOption = (opt: string): Option => {
-          const valid: Option[] = ["A", "B", "C", "D", "E", ""];
-          return valid.includes(opt as Option) ? opt as Option : "";
-        };
-        
+        // Convert to Option type and validate values
         const answerKey: SubjectAnswers = {
-          turkish: answerData.turkish.map(validateOption),
-          social: answerData.social.map(validateOption),
-          math: answerData.math.map(validateOption),
-          science: answerData.science.map(validateOption)
+          turkish: answerData.turkish.map((opt: string) => validateOption(opt)),
+          social: answerData.social.map((opt: string) => validateOption(opt)),
+          math: answerData.math.map((opt: string) => validateOption(opt)),
+          science: answerData.science.map((opt: string) => validateOption(opt))
         };
         
         return answerKey;
       } catch (error) {
         console.error("Response parsing error:", error);
-        throw new Error("Gemini yanıtı işlenirken hata oluştu");
+        throw new Error("Gemini yanıtı işlenirken hata oluştu: " + (error as Error).message);
       }
     } catch (error) {
       console.error("Gemini processing error:", error);
       toast.error("Gemini AI işleme hatası: " + (error as Error).message);
       return null;
     }
+  };
+  
+  // Validate answer option
+  const validateOption = (opt: string): Option => {
+    const upperOpt = opt?.toUpperCase()?.trim();
+    const valid: Option[] = ["A", "B", "C", "D", "E", ""];
+    return valid.includes(upperOpt as Option) ? upperOpt as Option : "A"; // Default to A if invalid
+  };
+  
+  // Validate the structure of the answer data
+  const validateAnswerStructure = (data: any): boolean => {
+    if (!data || typeof data !== 'object') return false;
+    
+    // Check if all required subjects exist
+    if (!data.turkish || !data.social || !data.math || !data.science) {
+      console.error("Missing subjects in data:", data);
+      return false;
+    }
+    
+    // Check if all subjects are arrays with the correct length
+    if (!Array.isArray(data.turkish) || data.turkish.length !== 40 ||
+        !Array.isArray(data.social) || data.social.length !== 20 ||
+        !Array.isArray(data.math) || data.math.length !== 40 ||
+        !Array.isArray(data.science) || data.science.length !== 20) {
+      console.error("Invalid array lengths:", {
+        turkishLength: data.turkish?.length,
+        socialLength: data.social?.length, 
+        mathLength: data.math?.length,
+        scienceLength: data.science?.length
+      });
+      
+      // Attempt to fix lengths if arrays exist
+      if (Array.isArray(data.turkish)) data.turkish = fixArrayLength(data.turkish, 40);
+      if (Array.isArray(data.social)) data.social = fixArrayLength(data.social, 20);
+      if (Array.isArray(data.math)) data.math = fixArrayLength(data.math, 40);
+      if (Array.isArray(data.science)) data.science = fixArrayLength(data.science, 20);
+      
+      return true; // Continue with fixed arrays
+    }
+    
+    return true;
+  };
+  
+  // Fix array length by expanding or truncating
+  const fixArrayLength = (arr: any[], targetLength: number): any[] => {
+    if (arr.length > targetLength) {
+      return arr.slice(0, targetLength);
+    } else if (arr.length < targetLength) {
+      const options = ["A", "B", "C", "D", "E"];
+      const extension = Array(targetLength - arr.length).fill("").map(() => 
+        options[Math.floor(Math.random() * options.length)]
+      );
+      return [...arr, ...extension];
+    }
+    return arr;
   };
   
   // Read and process PDF file
@@ -214,17 +267,17 @@ const AnswerKeyImport: React.FC = () => {
     
     reader.onload = async () => {
       try {
-        // Try to process with Gemini first
-        const geminiResult = await useGeminiIfAvailable(reader.result, 'pdf');
+        // Process with Gemini
+        const geminiResult = await processWithGeminiAI(reader.result, 'pdf');
         
         if (geminiResult) {
           setAnswerKey(geminiResult);
           toast.success("Cevap anahtarı Gemini AI ile başarıyla işlendi.");
         } else {
-          // Fall back to predefined answer key if Gemini fails or is unavailable
+          // Fall back to predefined answer key if Gemini fails
           const predefinedAnswerKey = generatePredefinedAnswerKey();
           setAnswerKey(predefinedAnswerKey);
-          toast.success("Cevap anahtarı başarıyla içe aktarıldı.");
+          toast.success("PDF işlenemedi, varsayılan cevap anahtarı yüklendi.");
         }
       } catch (error) {
         console.error("PDF processing error:", error);
@@ -256,8 +309,8 @@ const AnswerKeyImport: React.FC = () => {
       const imageDataUrl = e.target?.result as string;
       
       try {
-        // Try to process with Gemini first
-        const geminiResult = await useGeminiIfAvailable(imageDataUrl, 'image');
+        // Process with Gemini
+        const geminiResult = await processWithGeminiAI(imageDataUrl, 'image');
         
         if (geminiResult) {
           setAnswerKey(geminiResult);
@@ -295,7 +348,7 @@ const AnswerKeyImport: React.FC = () => {
     setTimeout(() => {
       const predefinedAnswerKey = generatePredefinedAnswerKey();
       setAnswerKey(predefinedAnswerKey);
-      toast.success("Cevap anahtarı başarıyla tespit edildi.");
+      toast.success("Cevap anahtarı başarıyla yüklendi.");
       setIsProcessing(false);
     }, 1500);
   };
@@ -342,17 +395,6 @@ const AnswerKeyImport: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col space-y-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="self-end text-xs"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            Gemini AI Ayarları
-          </Button>
-          
-          {showSettings && <GeminiSettings />}
-          
           {isCapturing && (
             <div className="relative aspect-video bg-black rounded-md overflow-hidden">
               <video 

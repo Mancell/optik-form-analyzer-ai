@@ -5,7 +5,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnswerKeyInput from "@/components/AnswerKeyInput";
 import AnswerKeyImport from "@/components/AnswerKeyImport";
-import GeminiSettings from "@/components/GeminiSettings";
 import { useNavigate } from "react-router-dom";
 import { Camera, BarChart2, PenLine, Sparkles } from "lucide-react";
 import { useAnswers } from "@/contexts/AnswerContext";
@@ -18,7 +17,6 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { setStudentInfo } = useAnswers();
   const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
-  const [showGeminiSettings, setShowGeminiSettings] = useState(false);
   
   // Pre-save the Gemini API key when the app loads
   useEffect(() => {
@@ -82,26 +80,7 @@ const Home: React.FC = () => {
             <BarChart2 className="mr-2 h-4 w-4" /> 
             Örnek Sonuçları Görüntüle
           </Button>
-          
-          <Button 
-            onClick={() => setShowGeminiSettings(!showGeminiSettings)}
-            variant={showGeminiSettings ? "default" : "outline"}
-            className={showGeminiSettings ? "bg-gradient-to-r from-purple-500 to-blue-500" : ""}
-          >
-            <Sparkles className="mr-2 h-4 w-4" /> 
-            {showGeminiSettings ? "Gemini AI Ayarlarını Gizle" : "Gemini AI Ayarları"}
-          </Button>
         </motion.div>
-        
-        {showGeminiSettings && (
-          <motion.div 
-            className="mt-4 w-full max-w-md"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <GeminiSettings />
-          </motion.div>
-        )}
       </div>
 
       <motion.div 
