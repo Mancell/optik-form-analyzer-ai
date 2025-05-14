@@ -2,68 +2,127 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Option, SubjectAnswers, useAnswers } from "@/contexts/AnswerContext";
+import { Option, useAnswers } from "@/contexts/AnswerContext";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useExamType } from "@/contexts/ExamTypeContext";
 
 interface AnswerSectionProps {
-  subject: keyof SubjectAnswers;
+  subject: string;
   subjectLabel: string;
   colorClass: string;
   questionCount: number;
 }
 
 const AnswerKeyInput: React.FC = () => {
+  const { examType } = useExamType();
+
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <Tabs defaultValue="turkish" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="turkish" className="text-turkish">
-            Türkçe
-          </TabsTrigger>
-          <TabsTrigger value="social" className="text-social">
-            Sosyal Bilimler
-          </TabsTrigger>
-          <TabsTrigger value="math" className="text-math">
-            Temel Matematik
-          </TabsTrigger>
-          <TabsTrigger value="science" className="text-science">
-            Fen Bilimleri
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="turkish">
-          <AnswerSection subject="turkish" subjectLabel="Türkçe" colorClass="subject-turkish" questionCount={40} />
-        </TabsContent>
-        
-        <TabsContent value="social">
-          <AnswerSection subject="social" subjectLabel="Sosyal Bilimler" colorClass="subject-social" questionCount={20} />
-        </TabsContent>
-        
-        <TabsContent value="math">
-          <AnswerSection subject="math" subjectLabel="Temel Matematik" colorClass="subject-math" questionCount={40} />
-        </TabsContent>
-        
-        <TabsContent value="science">
-          <AnswerSection subject="science" subjectLabel="Fen Bilimleri" colorClass="subject-science" questionCount={20} />
-        </TabsContent>
-      </Tabs>
+      {examType === "TYT" ? <TytAnswerKeyInput /> : <AytAnswerKeyInput />}
     </div>
   );
 };
 
-const AnswerSection: React.FC<AnswerSectionProps> = ({ subject, subjectLabel, colorClass, questionCount }) => {
-  const { answerKey, setAnswerKey } = useAnswers();
-  const subjectAnswers = answerKey[subject];
+const TytAnswerKeyInput: React.FC = () => {
+  return (
+    <Tabs defaultValue="turkish" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="turkish" className="text-turkish">
+          Türkçe
+        </TabsTrigger>
+        <TabsTrigger value="social" className="text-social">
+          Sosyal Bilimler
+        </TabsTrigger>
+        <TabsTrigger value="math" className="text-math">
+          Matematik
+        </TabsTrigger>
+        <TabsTrigger value="science" className="text-science">
+          Fen Bilimleri
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="turkish">
+        <AnswerSection subject="turkish" subjectLabel="Türkçe" colorClass="subject-turkish" questionCount={40} examType="TYT" />
+      </TabsContent>
+      
+      <TabsContent value="social">
+        <AnswerSection subject="social" subjectLabel="Sosyal Bilimler" colorClass="subject-social" questionCount={20} examType="TYT" />
+      </TabsContent>
+      
+      <TabsContent value="math">
+        <AnswerSection subject="math" subjectLabel="Matematik" colorClass="subject-math" questionCount={40} examType="TYT" />
+      </TabsContent>
+      
+      <TabsContent value="science">
+        <AnswerSection subject="science" subjectLabel="Fen Bilimleri" colorClass="subject-science" questionCount={20} examType="TYT" />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const AytAnswerKeyInput: React.FC = () => {
+  return (
+    <Tabs defaultValue="turkishSocial" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="turkishSocial" className="text-turkish">
+          TDE-Sosyal I
+        </TabsTrigger>
+        <TabsTrigger value="math" className="text-math">
+          Matematik
+        </TabsTrigger>
+        <TabsTrigger value="science" className="text-science">
+          Fen Bilimleri
+        </TabsTrigger>
+        <TabsTrigger value="socialII" className="text-social">
+          Sosyal II
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="turkishSocial">
+        <AnswerSection subject="turkishSocial" subjectLabel="Türk Dili ve Edebiyatı-Sosyal Bilimler I" colorClass="subject-turkish" questionCount={40} examType="AYT" />
+      </TabsContent>
+      
+      <TabsContent value="math">
+        <AnswerSection subject="math" subjectLabel="Matematik" colorClass="subject-math" questionCount={40} examType="AYT" />
+      </TabsContent>
+      
+      <TabsContent value="science">
+        <AnswerSection subject="science" subjectLabel="Fen Bilimleri" colorClass="subject-science" questionCount={40} examType="AYT" />
+      </TabsContent>
+      
+      <TabsContent value="socialII">
+        <AnswerSection subject="socialII" subjectLabel="Sosyal Bilimler II" colorClass="subject-social" questionCount={40} examType="AYT" />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const AnswerSection: React.FC<AnswerSectionProps & { examType: "TYT" | "AYT" }> = ({ subject, subjectLabel, colorClass, questionCount, examType }) => {
+  const { tytAnswerKey, setTytAnswerKey, aytAnswerKey, setAytAnswerKey } = useAnswers();
+  
+  const subjectAnswers = examType === "TYT" 
+    ? tytAnswerKey[subject as keyof typeof tytAnswerKey] 
+    : aytAnswerKey[subject as keyof typeof aytAnswerKey];
 
   const handleAnswerChange = (questionIndex: number, option: Option) => {
-    setAnswerKey((prev) => {
-      const newAnswers = { ...prev };
-      const answers = [...newAnswers[subject]];
-      answers[questionIndex] = option;
-      newAnswers[subject] = answers;
-      return newAnswers;
-    });
+    if (examType === "TYT") {
+      setTytAnswerKey((prev) => {
+        const newAnswers = { ...prev };
+        const answers = [...newAnswers[subject as keyof typeof newAnswers]];
+        answers[questionIndex] = option;
+        newAnswers[subject as keyof typeof newAnswers] = answers;
+        return newAnswers;
+      });
+    } else {
+      setAytAnswerKey((prev) => {
+        const newAnswers = { ...prev };
+        const answers = [...newAnswers[subject as keyof typeof newAnswers]];
+        answers[questionIndex] = option;
+        newAnswers[subject as keyof typeof newAnswers] = answers;
+        return newAnswers;
+      });
+    }
   };
 
   // Hesapla kaç grup gösterilmeli

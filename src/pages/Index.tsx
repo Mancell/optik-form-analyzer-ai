@@ -3,17 +3,16 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, BarChart2, Camera, BookOpen, Github, Code } from "lucide-react";
+import { Search, BarChart2, Camera, BookOpen, Github, Code, BookOpenCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { useExamType } from "@/contexts/ExamTypeContext";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
-
-  // Function to open GitHub repository
-  const openSourceCode = () => {
-    window.open("https://github.com/your-username/optik-form-analiz", "_blank");
-  };
+  const { examType, setExamType } = useExamType();
 
   return (
     <div className="container py-8 px-4 mx-auto min-h-screen">
@@ -34,6 +33,32 @@ const Index: React.FC = () => {
         >
           Optik formları tarayın, sonuçları analiz edin ve öğrenci performansını takip edin.
         </motion.p>
+        
+        {/* Exam Type Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.3 }}
+          className="mb-6"
+        >
+          <div className="bg-muted/30 p-4 rounded-lg">
+            <p className="font-medium mb-3">Sınav Türünü Seçin</p>
+            <RadioGroup 
+              value={examType}
+              onValueChange={(value) => setExamType(value as "TYT" | "AYT")}
+              className="flex gap-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="TYT" id="tyt" />
+                <Label htmlFor="tyt" className="cursor-pointer">TYT</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="AYT" id="ayt" />
+                <Label htmlFor="ayt" className="cursor-pointer">AYT</Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </motion.div>
         
         {/* Source Code Button */}
         <motion.div
@@ -132,24 +157,46 @@ const Index: React.FC = () => {
         <p className="text-muted-foreground text-sm mb-4">
           Bu uygulama şu anda şu formları destekler:
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <p className="font-medium mb-1">Türkçe</p>
-            <p>40 soru</p>
+
+        {examType === "TYT" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Türkçe</p>
+              <p>40 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Sosyal Bilimler</p>
+              <p>20 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Matematik</p>
+              <p>40 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Fen Bilimleri</p>
+              <p>20 soru</p>
+            </div>
           </div>
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <p className="font-medium mb-1">Sosyal Bilimler</p>
-            <p>20 soru</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Türk Dili ve Edebiyatı-Sosyal Bilimler I</p>
+              <p>40 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Matematik</p>
+              <p>40 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Fen Bilimleri</p>
+              <p>40 soru</p>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <p className="font-medium mb-1">Sosyal Bilimler II</p>
+              <p>40 soru</p>
+            </div>
           </div>
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <p className="font-medium mb-1">Matematik</p>
-            <p>40 soru</p>
-          </div>
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <p className="font-medium mb-1">Fen Bilimleri</p>
-            <p>20 soru</p>
-          </div>
-        </div>
+        )}
       </motion.div>
     </div>
   );

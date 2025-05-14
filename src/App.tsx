@@ -9,24 +9,27 @@ import Scan from "./pages/Scan";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import { AnswerProvider } from "./contexts/AnswerContext";
+import { ExamTypeProvider } from "./contexts/ExamTypeContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AnswerProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/scan" element={<Scan />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AnswerProvider>
+      <ExamTypeProvider>
+        <AnswerProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/scan" element={<Scan />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AnswerProvider>
+      </ExamTypeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

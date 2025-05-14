@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import AnswerKeyInput from "@/components/AnswerKeyInput";
 import AnswerKeyImport from "@/components/AnswerKeyImport";
+import ExamTypeSelector from "@/components/ExamTypeSelector";
 import { useNavigate } from "react-router-dom";
-import { Camera, BarChart2, PenLine, Sparkles, Search } from "lucide-react";
+import { Camera, BarChart2, PenLine, Search } from "lucide-react";
 import { useAnswers } from "@/contexts/AnswerContext";
+import { useExamType } from "@/contexts/ExamTypeContext";
 import { toast } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
 
@@ -16,6 +18,7 @@ const DEFAULT_API_KEY = "AIzaSyAw7CDaiZuQKn60ISltYTnzi18HvX2OQ3I";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { examType } = useExamType();
   const { setStudentInfo } = useAnswers();
   const [activeTab, setActiveTab] = useState<"manual" | "import">("manual");
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,16 +34,30 @@ const Home: React.FC = () => {
 
   // Function to create sample student data and navigate to results
   const handleViewSampleResults = () => {
-    // Sample student data with updated question counts
-    const sampleStudentInfo = {
-      name: "Örnek Öğrenci",
-      studentAnswers: {
-        turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-        math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
-        science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
-      }
-    };
+    // Generate sample student answers based on exam type
+    let sampleStudentInfo;
+    
+    if (examType === "TYT") {
+      sampleStudentInfo = {
+        name: "Örnek Öğrenci",
+        studentAnswers: {
+          turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+          social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+          math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
+          science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        }
+      };
+    } else {
+      sampleStudentInfo = {
+        name: "Örnek Öğrenci",
+        studentAnswers: {
+          turkishSocial: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+          math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as "A" | "B" | "C" | "D" | "E" | ""),
+          science: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+          socialII: Array(40).fill("").map(() => ["A", "B", "C", "D", "E"][Math.floor(Math.random() * 5)] as "A" | "B" | "C" | "D" | "E" | ""),
+        }
+      };
+    }
     
     // Set student info and navigate to results
     setStudentInfo(sampleStudentInfo);
@@ -110,10 +127,19 @@ const Home: React.FC = () => {
             className="bg-gradient-to-r from-primary/20 to-primary/5"
           >
             <BarChart2 className="mr-2 h-4 w-4" /> 
-            Örnek Sonuçları Görüntüle
+            Örnek {examType} Sonuçlarını Görüntüle
           </Button>
         </motion.div>
       </div>
+
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+      >
+        <ExamTypeSelector />
+      </motion.div>
 
       <motion.div 
         className="mb-12"
@@ -123,7 +149,9 @@ const Home: React.FC = () => {
       >
         <Card className="shadow-lg border-t-4 border-t-primary">
           <CardHeader>
-            <CardTitle className="text-center text-2xl">Cevap Anahtarı</CardTitle>
+            <CardTitle className="text-center text-2xl">
+              {examType} Cevap Anahtarı
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="manual" value={activeTab} onValueChange={(value) => setActiveTab(value as "manual" | "import")}>
@@ -160,7 +188,7 @@ const Home: React.FC = () => {
             color: "turkish",
             icon: <PenLine className="h-5 w-5 text-turkish" />,
             title: "1. Cevap Anahtarı",
-            description: "4 ders (Türkçe, Sosyal Bilimler, Temel Matematik ve Fen Bilimleri) için doğru cevapları girin."
+            description: `${examType} sınavı için tüm dersler için doğru cevapları girin.`
           },
           {
             color: "math",

@@ -1,17 +1,27 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { toast } from "@/components/ui/sonner";
+import { useExamType } from "@/contexts/ExamTypeContext";
 
 export type Option = "A" | "B" | "C" | "D" | "E" | "";
 
-export interface SubjectAnswers {
+export interface TytSubjectAnswers {
   turkish: Option[];
   social: Option[];
   math: Option[];
   science: Option[];
 }
 
-export interface SubjectResults {
+export interface AytSubjectAnswers {
+  turkishSocial: Option[]; // Türk Dili ve Edebiyatı-Sosyal Bilimler I
+  math: Option[];
+  science: Option[];
+  socialII: Option[]; // Sosyal Bilimler II
+}
+
+export type SubjectAnswers = TytSubjectAnswers | AytSubjectAnswers;
+
+export interface TytSubjectResults {
   turkish: {
     correct: number;
     incorrect: number;
@@ -38,10 +48,40 @@ export interface SubjectResults {
   };
 }
 
+export interface AytSubjectResults {
+  turkishSocial: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
+  math: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
+  science: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
+  socialII: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
+}
+
+export type SubjectResults = TytSubjectResults | AytSubjectResults;
+
 export interface Exam {
   id: string;
   date: string;
   name: string;
+  examType: "TYT" | "AYT";
   studentAnswers: SubjectAnswers;
   results?: SubjectResults;
 }
@@ -54,8 +94,10 @@ export interface StudentInfo {
 }
 
 interface AnswerContextProps {
-  answerKey: SubjectAnswers;
-  setAnswerKey: React.Dispatch<React.SetStateAction<SubjectAnswers>>;
+  tytAnswerKey: TytSubjectAnswers;
+  aytAnswerKey: AytSubjectAnswers;
+  setTytAnswerKey: React.Dispatch<React.SetStateAction<TytSubjectAnswers>>;
+  setAytAnswerKey: React.Dispatch<React.SetStateAction<AytSubjectAnswers>>;
   studentInfo: StudentInfo | null;
   setStudentInfo: React.Dispatch<React.SetStateAction<StudentInfo | null>>;
   calculateResults: () => void;
@@ -77,24 +119,44 @@ const createEmptyAnswerArray = (length: number): Option[] => {
   return Array(length).fill("");
 };
 
-// Default empty answer key structure with updated question counts
-const defaultAnswerKey: SubjectAnswers = {
+// Default empty answer key structure for TYT
+const defaultTytAnswerKey: TytSubjectAnswers = {
   turkish: createEmptyAnswerArray(40),
   social: createEmptyAnswerArray(20),
   math: createEmptyAnswerArray(40),
   science: createEmptyAnswerArray(20),
 };
 
+// Default empty answer key structure for AYT
+const defaultAytAnswerKey: AytSubjectAnswers = {
+  turkishSocial: createEmptyAnswerArray(40),
+  math: createEmptyAnswerArray(40),
+  science: createEmptyAnswerArray(40),
+  socialII: createEmptyAnswerArray(40),
+};
+
 export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [answerKey, setAnswerKey] = useState<SubjectAnswers>(defaultAnswerKey);
+  const { examType } = useExamType();
+  const [tytAnswerKey, setTytAnswerKey] = useState<TytSubjectAnswers>(defaultTytAnswerKey);
+  const [aytAnswerKey, setAytAnswerKey] = useState<AytSubjectAnswers>(defaultAytAnswerKey);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
 
   // Calculate results by comparing student answers with the answer key
   const calculateResults = () => {
     if (!studentInfo) return;
 
+    if (examType === "TYT") {
+      calculateTytResults();
+    } else {
+      calculateAytResults();
+    }
+  };
+
+  const calculateTytResults = () => {
+    if (!studentInfo || !isTytAnswers(studentInfo.studentAnswers)) return;
+
     const studentAnswers = studentInfo.studentAnswers;
-    const results: SubjectResults = {
+    const results: TytSubjectResults = {
       turkish: { correct: 0, incorrect: 0, empty: 0, total: 0 },
       social: { correct: 0, incorrect: 0, empty: 0, total: 0 },
       math: { correct: 0, incorrect: 0, empty: 0, total: 0 },
@@ -102,9 +164,9 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
 
     // Calculate for each subject
-    Object.keys(answerKey).forEach((subject) => {
-      const subjectKey = subject as keyof SubjectAnswers;
-      const correctAnswers = answerKey[subjectKey];
+    Object.keys(tytAnswerKey).forEach((subject) => {
+      const subjectKey = subject as keyof TytSubjectAnswers;
+      const correctAnswers = tytAnswerKey[subjectKey];
       const studentSubjectAnswers = studentAnswers[subjectKey];
 
       results[subjectKey].total = correctAnswers.length;
@@ -126,9 +188,58 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Update student info with results
     setStudentInfo({
       ...studentInfo,
-      results,
+      results: results,
     });
   };
+
+  const calculateAytResults = () => {
+    if (!studentInfo || !isAytAnswers(studentInfo.studentAnswers)) return;
+
+    const studentAnswers = studentInfo.studentAnswers;
+    const results: AytSubjectResults = {
+      turkishSocial: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      math: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      science: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      socialII: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+    };
+
+    // Calculate for each subject
+    Object.keys(aytAnswerKey).forEach((subject) => {
+      const subjectKey = subject as keyof AytSubjectAnswers;
+      const correctAnswers = aytAnswerKey[subjectKey];
+      const studentSubjectAnswers = studentAnswers[subjectKey];
+
+      results[subjectKey].total = correctAnswers.length;
+
+      // Compare each answer
+      correctAnswers.forEach((answer, index) => {
+        const studentAnswer = studentSubjectAnswers[index];
+        
+        if (studentAnswer === "") {
+          results[subjectKey].empty++;
+        } else if (studentAnswer === answer) {
+          results[subjectKey].correct++;
+        } else {
+          results[subjectKey].incorrect++;
+        }
+      });
+    });
+
+    // Update student info with results
+    setStudentInfo({
+      ...studentInfo,
+      results: results,
+    });
+  };
+
+  // Type guard functions
+  function isTytAnswers(answers: SubjectAnswers): answers is TytSubjectAnswers {
+    return 'turkish' in answers && 'social' in answers && !('turkishSocial' in answers);
+  }
+
+  function isAytAnswers(answers: SubjectAnswers): answers is AytSubjectAnswers {
+    return 'turkishSocial' in answers && 'socialII' in answers;
+  }
 
   // Add the current exam to history
   const addExamToHistory = (examName: string) => {
@@ -138,6 +249,7 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       id: `exam-${Date.now()}`,
       date: new Date().toISOString(),
       name: examName,
+      examType: examType,
       studentAnswers: studentInfo.studentAnswers,
       results: studentInfo.results
     };
@@ -153,8 +265,10 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const value = {
-    answerKey,
-    setAnswerKey,
+    tytAnswerKey,
+    aytAnswerKey,
+    setTytAnswerKey,
+    setAytAnswerKey,
     studentInfo,
     setStudentInfo,
     calculateResults,
