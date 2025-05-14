@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import CameraComponent from "@/components/Camera";
 import { ArrowLeft, Info, Upload } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAnswers, StudentInfo } from "@/contexts/AnswerContext";
+import { useAnswers, StudentInfo, Option } from "@/contexts/AnswerContext";
 import { toast } from "@/components/ui/use-toast";
 
 const Scan: React.FC = () => {
@@ -31,10 +31,10 @@ const Scan: React.FC = () => {
       // Generate mock student data with random answers
       const mockStudentName = "Mehmet Yılmaz";
       const mockAnswers = {
-        turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
-        social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
-        math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
-        science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)])
+        turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as Option),
+        social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as Option),
+        math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as Option),
+        science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)] as Option)
       };
 
       // Create student info object
