@@ -145,8 +145,10 @@ const AnswerSection: React.FC<AnswerSectionProps & { examType: "TYT" | "AYT" }> 
     show: { opacity: 1, y: 0 }
   };
 
+  const themeClass = examType === "TYT" ? "theme-tyt" : "theme-ayt";
+
   return (
-    <Card className="border-t-4" style={{ borderTopColor: `var(--${colorClass.split('-')[1]})` }}>
+    <Card className={cn("card", themeClass, "border-t-4 hover:shadow-lg transition-all")}>
       <CardHeader>
         <CardTitle>{subjectLabel} Cevap Anahtarı ({questionCount} Soru)</CardTitle>
       </CardHeader>
@@ -181,11 +183,11 @@ const AnswerSection: React.FC<AnswerSectionProps & { examType: "TYT" | "AYT" }> 
                               key={option}
                               onClick={() => handleAnswerChange(absoluteIndex, option as Option)}
                               className={cn(
-                                "w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium transition-all",
+                                "w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium transition-all answer-option",
                                 colorClass,
                                 subjectAnswers[absoluteIndex] === option 
                                   ? "selected shadow-md" 
-                                  : "hover:bg-opacity-10 hover:bg-gray-100"
+                                  : "hover:bg-opacity-20 hover:bg-gray-100"
                               )}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,6 +39,10 @@
     --social: 142.1 76.2% 36.3%; /* green for Social */
     --math: 262.1 83.3% 57.8%; /* purple for Math */
     --science: 35.5 91.7% 32.9%; /* orange for Science */
+
+    /* Exam Theme Colors */
+    --tyt-theme: 221.2 83.2% 53.3%; /* Blue theme for TYT */
+    --ayt-theme: 262.1 83.3% 57.8%; /* Purple theme for AYT */
   }
 
   .dark {
@@ -154,4 +157,79 @@
   background-color: hsl(var(--science));
   color: white;
   border-color: hsl(var(--science));
+}
+
+/* Exam type theme classes */
+.theme-tyt {
+  border-color: hsl(var(--tyt-theme) / 0.6);
+  box-shadow: 0 4px 20px -5px hsl(var(--tyt-theme) / 0.4);
+}
+
+.theme-tyt.card {
+  background: linear-gradient(to bottom right, hsl(var(--tyt-theme) / 0.05), hsl(var(--tyt-theme) / 0.1));
+  transition: all 0.3s ease;
+}
+
+.theme-tyt.card:hover {
+  box-shadow: 0 8px 25px -5px hsl(var(--tyt-theme) / 0.5);
+  transform: translateY(-2px);
+}
+
+.theme-ayt {
+  border-color: hsl(var(--ayt-theme) / 0.6);
+  box-shadow: 0 4px 20px -5px hsl(var(--ayt-theme) / 0.4);
+}
+
+.theme-ayt.card {
+  background: linear-gradient(to bottom right, hsl(var(--ayt-theme) / 0.05), hsl(var(--ayt-theme) / 0.1));
+  transition: all 0.3s ease;
+}
+
+.theme-ayt.card:hover {
+  box-shadow: 0 8px 25px -5px hsl(var(--ayt-theme) / 0.5);
+  transform: translateY(-2px);
+}
+
+/* Particle button styling */
+.particle-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle-button .particles {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-animation 0.8s ease-out forwards;
+}
+
+@keyframes particle-animation {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* Answer section hover effect */
+.answer-option {
+  transition: all 0.2s ease;
+}
+
+.answer-option:hover {
+  transform: scale(1.15);
+  z-index: 10;
 }

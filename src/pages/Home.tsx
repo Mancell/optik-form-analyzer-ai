@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -147,7 +146,7 @@ const Home: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.5 }}
       >
-        <Card className="shadow-lg border-t-4 border-t-primary">
+        <Card className={`shadow-lg border-t-4 ${examType === "TYT" ? "border-t-[hsl(var(--tyt-theme))]" : "border-t-[hsl(var(--ayt-theme))]"}`}>
           <CardHeader>
             <CardTitle className="text-center text-2xl">
               {examType} Cevap Anahtarı
@@ -173,8 +172,9 @@ const Home: React.FC = () => {
           <CardFooter className="flex justify-center pt-4 pb-6">
             <Button 
               onClick={() => navigate("/scan")} 
+              variant="particle"
               size="lg" 
-              className="w-full sm:w-auto px-8 py-6 text-lg shadow-md hover:shadow-lg transition-all"
+              className={`w-full sm:w-auto px-8 py-6 text-lg shadow-md hover:shadow-lg transition-all ${examType === "TYT" ? "bg-[hsl(var(--tyt-theme))]" : "bg-[hsl(var(--ayt-theme))]"} text-white`}
             >
               <Camera className="mr-2 h-5 w-5" /> Form Taramaya Başla
             </Button>
