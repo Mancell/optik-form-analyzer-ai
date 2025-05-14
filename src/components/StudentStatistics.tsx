@@ -19,11 +19,22 @@ import {
   Legend,
   ResponsiveContainer,
   Cell,
+  PieChart,
+  Pie,
+  LineChart,
+  Line,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ChartBar, ChartPie, BarChart3, Activity, ChevronDown } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartContainer } from "@/components/ui/chart";
 
 interface StudentResult {
   id: string;
@@ -76,9 +87,51 @@ const LESSON_NAMES = {
   science: "Fen",
 };
 
+// Custom tooltip component
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload || payload.length === 0) return null;
+  
+  return (
+    <div className="bg-background border border-border/50 rounded-lg shadow-lg p-3 text-sm">
+      <p className="font-medium mb-2">{label}</p>
+      {payload.map((entry: any, index: number) => (
+        <div key={index} className="flex items-center gap-2 mb-1">
+          <div 
+            className="w-3 h-3 rounded-full" 
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-muted-foreground">{entry.name}:</span>
+          <span className="font-medium tabular-nums">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text 
+      x={x} 
+      y={y} 
+      fill="white" 
+      textAnchor={x > cx ? 'start' : 'end'} 
+      dominantBaseline="central"
+      className="text-xs font-medium"
+    >
+      {`${name} ${(percent * 100).toFixed(1)}%`}
+    </text>
+  );
+};
+
 const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, type }) => {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
+  const [chartType, setChartType] = useState("bar");
   
   // Arama sorgusuna göre filtrelenmiş öğrenci listesi
   const filteredStudents = useMemo(() => {
@@ -173,6 +226,98 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
     }).sort((a, b) => b.totalNet - a.totalNet);
   }, [filteredStudents]);
 
+  // Ders bazlı doğru sayısı grafiği için veri hazırlama
+  const correctsBySubjectData = useMemo(() => {
+    if (!averages) return [];
+    
+    return [
+      {
+        name: "Türkçe",
+        value: averages.turkish.correct,
+        color: COLORS.turkish
+      },
+      {
+        name: "Sosyal",
+        value: averages.social.correct,
+        color: COLORS.social
+      },
+      {
+        name: "Matematik",
+        value: averages.math.correct,
+        color: COLORS.math
+      },
+      {
+        name: "Fen",
+        value: averages.science.correct,
+        color: COLORS.science
+      }
+    ];
+  }, [averages]);
+
+  // Ders bazlı net puan grafiği için veri hazırlama
+  const netsBySubjectData = useMemo(() => {
+    if (!averages) return [];
+    
+    return [
+      {
+        name: "Türkçe",
+        value: averages.turkish.net,
+        color: COLORS.turkish
+      },
+      {
+        name: "Sosyal",
+        value: averages.social.net,
+        color: COLORS.social
+      },
+      {
+        name: "Matematik",
+        value: averages.math.net,
+        color: COLORS.math
+      },
+      {
+        name: "Fen",
+        value: averages.science.net,
+        color: COLORS.science
+      }
+    ];
+  }, [averages]);
+
+  // Radar chart için veri hazırlama
+  const radarData = useMemo(() => {
+    if (!averages) return [];
+    
+    return [
+      {
+        subject: "Türkçe",
+        Doğru: averages.turkish.correct,
+        Yanlış: averages.turkish.incorrect,
+        Net: averages.turkish.net,
+        fullMark: averages.turkish.total,
+      },
+      {
+        subject: "Sosyal",
+        Doğru: averages.social.correct,
+        Yanlış: averages.social.incorrect,
+        Net: averages.social.net,
+        fullMark: averages.social.total,
+      },
+      {
+        subject: "Matematik",
+        Doğru: averages.math.correct,
+        Yanlış: averages.math.incorrect,
+        Net: averages.math.net,
+        fullMark: averages.math.total,
+      },
+      {
+        subject: "Fen",
+        Doğru: averages.science.correct,
+        Yanlış: averages.science.incorrect,
+        Net: averages.science.net,
+        fullMark: averages.science.total,
+      }
+    ];
+  }, [averages]);
+
   // Grafik için veri hazırlama
   const chartData = useMemo(() => {
     if (!averages) return [];
@@ -234,7 +379,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
           <div className="h-2" style={{ backgroundColor: COLORS.turkish }}></div>
           <CardHeader className="py-3">
             <CardTitle className="text-base">Türkçe</CardTitle>
@@ -261,7 +406,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
           <div className="h-2" style={{ backgroundColor: COLORS.social }}></div>
           <CardHeader className="py-3">
             <CardTitle className="text-base">Sosyal</CardTitle>
@@ -288,7 +433,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
           <div className="h-2" style={{ backgroundColor: COLORS.math }}></div>
           <CardHeader className="py-3">
             <CardTitle className="text-base">Matematik</CardTitle>
@@ -315,7 +460,7 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
           </CardContent>
         </Card>
         
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
           <div className="h-2" style={{ backgroundColor: COLORS.science }}></div>
           <CardHeader className="py-3">
             <CardTitle className="text-base">Fen</CardTitle>
@@ -343,60 +488,304 @@ const StudentStatistics: React.FC<StudentStatisticsProps> = ({ title, students, 
         </Card>
       </div>
       
-      <Card>
+      <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] mb-6">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  dataKey="doğru"
-                  name="Doğru"
-                  fill="#22c55e"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="yanlış"
-                  name="Yanlış"
-                  fill="#ef4444"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="boş"
-                  name="Boş"
-                  fill="#9ca3af"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="net"
-                  name="Net"
-                  fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <Tabs defaultValue="bar" className="w-full mb-6" onValueChange={setChartType}>
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="bar" className="flex items-center gap-1">
+                <ChartBar className="h-4 w-4" /> 
+                <span className={isMobile ? "hidden" : "inline"}>Bar</span>
+              </TabsTrigger>
+              <TabsTrigger value="pie" className="flex items-center gap-1">
+                <ChartPie className="h-4 w-4" />
+                <span className={isMobile ? "hidden" : "inline"}>Pie</span>
+              </TabsTrigger>
+              <TabsTrigger value="line" className="flex items-center gap-1">
+                <Activity className="h-4 w-4" />
+                <span className={isMobile ? "hidden" : "inline"}>Line</span>
+              </TabsTrigger>
+              <TabsTrigger value="radar" className="flex items-center gap-1">
+                <BarChart3 className="h-4 w-4" />
+                <span className={isMobile ? "hidden" : "inline"}>Radar</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="bar" className="mt-0">
+              <Card className="p-4 shadow-sm">
+                <CardHeader className="p-0 pb-2">
+                  <CardTitle className="text-base">Ders Bazlı Değerlendirme</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[350px]">
+                    <ChartContainer 
+                      config={{
+                        turkish: { color: COLORS.turkish },
+                        social: { color: COLORS.social },
+                        math: { color: COLORS.math },
+                        science: { color: COLORS.science },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={chartData}
+                          margin={{
+                            top: 20,
+                            right: 30,
+                            left: 0,
+                            bottom: 5,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                          <Bar
+                            dataKey="doğru"
+                            name="Doğru"
+                            fill="#22c55e"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="yanlış"
+                            name="Yanlış"
+                            fill="#ef4444"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="boş"
+                            name="Boş"
+                            fill="#9ca3af"
+                            radius={[4, 4, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="net"
+                            name="Net"
+                            fill="#3b82f6"
+                            radius={[4, 4, 0, 0]}
+                          >
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="pie" className="mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="p-4 shadow-sm">
+                  <CardHeader className="p-0 pb-2">
+                    <CardTitle className="text-base">Ortalama Doğru Sayısı</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="h-[300px]">
+                      <ChartContainer 
+                        config={{
+                          turkish: { color: COLORS.turkish },
+                          social: { color: COLORS.social },
+                          math: { color: COLORS.math },
+                          science: { color: COLORS.science },
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={correctsBySubjectData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={renderCustomizedLabel}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                              nameKey="name"
+                            >
+                              {correctsBySubjectData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="p-4 shadow-sm">
+                  <CardHeader className="p-0 pb-2">
+                    <CardTitle className="text-base">Ortalama Net Puanlar</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="h-[300px]">
+                      <ChartContainer 
+                        config={{
+                          turkish: { color: COLORS.turkish },
+                          social: { color: COLORS.social },
+                          math: { color: COLORS.math },
+                          science: { color: COLORS.science },
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={netsBySubjectData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={renderCustomizedLabel}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                              nameKey="name"
+                            >
+                              {netsBySubjectData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="line" className="mt-0">
+              <Card className="p-4 shadow-sm">
+                <CardHeader className="p-0 pb-2">
+                  <CardTitle className="text-base">Ders Bazlı Performans</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[350px]">
+                    <ChartContainer 
+                      config={{
+                        turkish: { color: COLORS.turkish },
+                        social: { color: COLORS.social },
+                        math: { color: COLORS.math },
+                        science: { color: COLORS.science },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={chartData}
+                          margin={{
+                            top: 20,
+                            right: 30,
+                            left: 0,
+                            bottom: 5,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="doğru" 
+                            name="Doğru" 
+                            stroke="#22c55e" 
+                            activeDot={{ r: 8 }}
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="yanlış" 
+                            name="Yanlış" 
+                            stroke="#ef4444" 
+                            activeDot={{ r: 8 }}
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="boş" 
+                            name="Boş" 
+                            stroke="#9ca3af" 
+                            activeDot={{ r: 8 }}
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="net" 
+                            name="Net"
+                            stroke="#3b82f6" 
+                            activeDot={{ r: 10 }}
+                            strokeWidth={3}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="radar" className="mt-0">
+              <Card className="p-4 shadow-sm">
+                <CardHeader className="p-0 pb-2">
+                  <CardTitle className="text-base">Ders Performans Analizi</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[350px]">
+                    <ChartContainer 
+                      config={{
+                        turkish: { color: COLORS.turkish },
+                        social: { color: COLORS.social },
+                        math: { color: COLORS.math },
+                        science: { color: COLORS.science },
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="subject" />
+                          <PolarRadiusAxis angle={30} domain={[0, 30]} />
+                          <Radar 
+                            name="Doğru" 
+                            dataKey="Doğru" 
+                            stroke="#22c55e" 
+                            fill="#22c55e" 
+                            fillOpacity={0.6}
+                          />
+                          <Radar 
+                            name="Yanlış" 
+                            dataKey="Yanlış" 
+                            stroke="#ef4444" 
+                            fill="#ef4444" 
+                            fillOpacity={0.6}
+                          />
+                          <Radar 
+                            name="Net" 
+                            dataKey="Net" 
+                            stroke="#3b82f6" 
+                            fill="#3b82f6" 
+                            fillOpacity={0.6}
+                          />
+                          <Legend />
+                          <Tooltip />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
           
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-sm overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
