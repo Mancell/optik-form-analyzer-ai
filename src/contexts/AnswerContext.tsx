@@ -16,7 +16,7 @@ export interface AytSubjectAnswers {
   turkishSocial: Option[]; // Türk Dili ve Edebiyatı-Sosyal Bilimler I
   math: Option[];
   science: Option[];
-  socialII: Option[]; // Sosyal Bilimler II
+  socialII: Option[];
 }
 
 export type SubjectAnswers = TytSubjectAnswers | AytSubjectAnswers;
@@ -237,8 +237,7 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Calculate for each subject
     Object.keys(aytAnswerKey).forEach((subject) => {
       const subjectKey = subject as keyof AytSubjectAnswers;
-      if (subjectKey === "turkish" || subjectKey === "social") return; // Skip compatibility fields
-      
+      // Fix: Remove the comparison since turkish and social aren't valid keys in AytSubjectAnswers
       const correctAnswers = aytAnswerKey[subjectKey];
       const studentSubjectAnswers = studentAnswers[subjectKey];
 
