@@ -73,6 +73,19 @@ export interface AytSubjectResults {
     empty: number;
     total: number;
   };
+  // Add these fields to match with TytSubjectResults for compatibility
+  turkish: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
+  social: {
+    correct: number;
+    incorrect: number;
+    empty: number;
+    total: number;
+  };
 }
 
 export type SubjectResults = TytSubjectResults | AytSubjectResults;
@@ -102,6 +115,9 @@ interface AnswerContextProps {
   setStudentInfo: React.Dispatch<React.SetStateAction<StudentInfo | null>>;
   calculateResults: () => void;
   addExamToHistory: (examName: string) => void;
+  // Add these properties to fix the type errors
+  answerKey: SubjectAnswers;
+  setAnswerKey: (key: SubjectAnswers) => void;
 }
 
 const AnswerContext = createContext<AnswerContextProps | undefined>(undefined);
@@ -140,6 +156,18 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [tytAnswerKey, setTytAnswerKey] = useState<TytSubjectAnswers>(defaultTytAnswerKey);
   const [aytAnswerKey, setAytAnswerKey] = useState<AytSubjectAnswers>(defaultAytAnswerKey);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
+
+  // Get the appropriate answer key based on the exam type
+  const answerKey = examType === "TYT" ? tytAnswerKey : aytAnswerKey;
+
+  // Set the appropriate answer key based on the exam type
+  const setAnswerKey = (key: SubjectAnswers) => {
+    if (examType === "TYT" && "turkish" in key) {
+      setTytAnswerKey(key as TytSubjectAnswers);
+    } else if (examType === "AYT" && "turkishSocial" in key) {
+      setAytAnswerKey(key as AytSubjectAnswers);
+    }
+  };
 
   // Calculate results by comparing student answers with the answer key
   const calculateResults = () => {
@@ -201,11 +229,16 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       math: { correct: 0, incorrect: 0, empty: 0, total: 0 },
       science: { correct: 0, incorrect: 0, empty: 0, total: 0 },
       socialII: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      // Initialize the compatibility fields
+      turkish: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      social: { correct: 0, incorrect: 0, empty: 0, total: 0 },
     };
 
     // Calculate for each subject
     Object.keys(aytAnswerKey).forEach((subject) => {
       const subjectKey = subject as keyof AytSubjectAnswers;
+      if (subjectKey === "turkish" || subjectKey === "social") return; // Skip compatibility fields
+      
       const correctAnswers = aytAnswerKey[subjectKey];
       const studentSubjectAnswers = studentAnswers[subjectKey];
 
@@ -224,6 +257,18 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         }
       });
     });
+    
+    // Copy turkishSocial results to turkish for compatibility
+    results.turkish.correct = results.turkishSocial.correct;
+    results.turkish.incorrect = results.turkishSocial.incorrect;
+    results.turkish.empty = results.turkishSocial.empty;
+    results.turkish.total = results.turkishSocial.total;
+    
+    // Copy socialII results to social for compatibility
+    results.social.correct = results.socialII.correct;
+    results.social.incorrect = results.socialII.incorrect;
+    results.social.empty = results.socialII.empty;
+    results.social.total = results.socialII.total;
 
     // Update student info with results
     setStudentInfo({
@@ -272,7 +317,10 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     studentInfo,
     setStudentInfo,
     calculateResults,
-    addExamToHistory
+    addExamToHistory,
+    // Add these properties to fix the type errors
+    answerKey,
+    setAnswerKey
   };
 
   return <AnswerContext.Provider value={value}>{children}</AnswerContext.Provider>;
