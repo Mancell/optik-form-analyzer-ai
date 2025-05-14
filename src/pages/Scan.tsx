@@ -1,15 +1,65 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import CameraComponent from "@/components/Camera";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, Info, Upload } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAnswers, StudentInfo } from "@/contexts/AnswerContext";
+import { toast } from "@/components/ui/use-toast";
 
 const Scan: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { setStudentInfo } = useAnswers();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    toast({
+      title: "Form İşleniyor",
+      description: "Yüklenen form analiz ediliyor, lütfen bekleyin...",
+    });
+
+    // Simulate processing delay
+    setTimeout(() => {
+      // Generate mock student data with random answers
+      const mockStudentName = "Mehmet Yılmaz";
+      const mockAnswers = {
+        turkish: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
+        social: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
+        math: Array(40).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)]),
+        science: Array(20).fill("").map(() => ["A", "B", "C", "D", "E", ""][Math.floor(Math.random() * 6)])
+      };
+
+      // Create student info object
+      const studentInfo: StudentInfo = {
+        name: mockStudentName,
+        studentAnswers: mockAnswers
+      };
+
+      // Update context with student info
+      setStudentInfo(studentInfo);
+      setIsProcessing(false);
+      
+      toast({
+        title: "İşlem Tamamlandı",
+        description: "Form başarıyla analiz edildi.",
+      });
+
+      // Navigate to results page
+      navigate("/results");
+    }, 2000);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="container py-6 px-3 md:py-8 md:px-4 mx-auto">
@@ -29,6 +79,34 @@ const Scan: React.FC = () => {
         <p className="text-sm md:text-base text-muted-foreground max-w-2xl mb-4 md:mb-6">
           Öğrenci formunu kamera ile tarayın veya galeriden bir fotoğraf yükleyin.
         </p>
+        
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button 
+            variant="default" 
+            onClick={() => {}}
+            className="flex items-center gap-2"
+            disabled={isProcessing}
+          >
+            Taramaya Başla
+          </Button>
+
+          <Button 
+            variant="outline"
+            onClick={handleUploadClick}
+            className="flex items-center gap-2"
+            disabled={isProcessing}
+          >
+            <Upload className="h-4 w-4" /> Form Yükle
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+              disabled={isProcessing}
+            />
+          </Button>
+        </div>
         
         <div className="w-full max-w-lg bg-white rounded-lg overflow-hidden shadow-lg border">
           <CameraComponent />

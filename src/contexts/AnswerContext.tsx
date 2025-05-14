@@ -27,24 +27,28 @@ export interface TytSubjectResults {
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   social: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   math: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   science: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
 }
 
@@ -54,24 +58,28 @@ export interface AytSubjectResults {
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   math: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   science: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   socialII: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   // Add these fields to match with TytSubjectResults for compatibility
   turkish: {
@@ -79,12 +87,14 @@ export interface AytSubjectResults {
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
   social: {
     correct: number;
     incorrect: number;
     empty: number;
     total: number;
+    net: number; // Adding net calculation
   };
 }
 
@@ -151,6 +161,11 @@ const defaultAytAnswerKey: AytSubjectAnswers = {
   socialII: createEmptyAnswerArray(40),
 };
 
+// Function to calculate net score (correct - incorrect/4)
+const calculateNetScore = (correct: number, incorrect: number): number => {
+  return parseFloat((correct - incorrect / 4).toFixed(2));
+};
+
 export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { examType } = useExamType();
   const [tytAnswerKey, setTytAnswerKey] = useState<TytSubjectAnswers>(defaultTytAnswerKey);
@@ -185,10 +200,10 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const studentAnswers = studentInfo.studentAnswers;
     const results: TytSubjectResults = {
-      turkish: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      social: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      math: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      science: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      turkish: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      social: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      math: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      science: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
     };
 
     // Calculate for each subject
@@ -211,6 +226,9 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           results[subjectKey].incorrect++;
         }
       });
+      
+      // Calculate net score using the 4 wrong = 1 wrong formula
+      results[subjectKey].net = calculateNetScore(results[subjectKey].correct, results[subjectKey].incorrect);
     });
 
     // Update student info with results
@@ -225,19 +243,19 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const studentAnswers = studentInfo.studentAnswers;
     const results: AytSubjectResults = {
-      turkishSocial: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      math: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      science: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      socialII: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      turkishSocial: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      math: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      science: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      socialII: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
       // Initialize the compatibility fields
-      turkish: { correct: 0, incorrect: 0, empty: 0, total: 0 },
-      social: { correct: 0, incorrect: 0, empty: 0, total: 0 },
+      turkish: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
+      social: { correct: 0, incorrect: 0, empty: 0, total: 0, net: 0 },
     };
 
     // Calculate for each subject
     Object.keys(aytAnswerKey).forEach((subject) => {
       const subjectKey = subject as keyof AytSubjectAnswers;
-      // Fix: Remove the comparison since turkish and social aren't valid keys in AytSubjectAnswers
+      // We're not comparing keys here, just using them to access properties
       const correctAnswers = aytAnswerKey[subjectKey];
       const studentSubjectAnswers = studentAnswers[subjectKey];
 
@@ -255,6 +273,9 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           results[subjectKey].incorrect++;
         }
       });
+      
+      // Calculate net score using the 4 wrong = 1 wrong formula
+      results[subjectKey].net = calculateNetScore(results[subjectKey].correct, results[subjectKey].incorrect);
     });
     
     // Copy turkishSocial results to turkish for compatibility
@@ -262,12 +283,14 @@ export const AnswerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     results.turkish.incorrect = results.turkishSocial.incorrect;
     results.turkish.empty = results.turkishSocial.empty;
     results.turkish.total = results.turkishSocial.total;
+    results.turkish.net = results.turkishSocial.net;
     
     // Copy socialII results to social for compatibility
     results.social.correct = results.socialII.correct;
     results.social.incorrect = results.socialII.incorrect;
     results.social.empty = results.socialII.empty;
     results.social.total = results.socialII.total;
+    results.social.net = results.socialII.net;
 
     // Update student info with results
     setStudentInfo({

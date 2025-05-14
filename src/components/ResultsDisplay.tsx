@@ -68,15 +68,6 @@ const ResultsDisplay: React.FC = () => {
     },
   ];
 
-  // Calculate total score (with net calculation: correct - (incorrect / 4))
-  const calculateNet = (correct: number, incorrect: number) => {
-    return correct - (incorrect / 4);
-  };
-
-  const calculateScore = (subject: any) => {
-    return calculateNet(subject.correct, subject.incorrect).toFixed(2);
-  };
-
   // Colors for pie chart
   const COLORS = ["#3B82F6", "#10B981", "#8B5CF6", "#F59E0B"];
 
@@ -149,12 +140,12 @@ const ResultsDisplay: React.FC = () => {
                 </div>
               </div>
               <div className="mt-3 text-center">
-                <div className="text-xs text-muted-foreground">Net</div>
+                <div className="text-xs text-muted-foreground">Net (4 Yanlış 1 Doğru Götürür)</div>
                 <div className="text-lg font-semibold">
-                  {calculateScore({
-                    correct: subject.doğru,
-                    incorrect: subject.yanlış,
-                  })}
+                  {subject.name === "Türkçe" ? results.turkish.net :
+                   subject.name === "Sosyal" ? results.social.net :
+                   subject.name === "Matematik" ? results.math.net :
+                   results.science.net}
                 </div>
               </div>
             </CardContent>
